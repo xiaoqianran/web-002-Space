@@ -150,9 +150,9 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .page-return{position:fixed;top:var(--margin_y);left:var(--margin_x);z-index:50;pointer-events:auto}
 
 /* return button */
-.rbtn{align-items:center;cursor:pointer;pointer-events:auto}
-.rbtn svg{height:calc(var(--scale)*.8rem);fill:var(--color_theme);margin-right:calc(var(--scale)*.5rem);transition:transform .5s var(--ease_out)}
-.rbtn p{color:var(--color_white);transition:color .5s var(--ease_out)}
+.rbtn{align-items:center;cursor:pointer;pointer-events:auto;flex-shrink:0;width:max-content}
+.rbtn svg{width:auto;height:calc(var(--scale)*.8rem);flex-shrink:0;fill:var(--color_theme);margin-right:calc(var(--scale)*.5rem);transition:transform .5s var(--ease_out)}.rbtn svg path{fill:var(--color_theme);stroke:none}
+.rbtn p{color:var(--color_white);white-space:nowrap;flex-shrink:0;transition:color .5s var(--ease_out)}
 .rbtn:hover p{color:var(--color_theme)}
 .rbtn:hover svg{transform:translateX(calc(var(--scale)*-.2rem))}
 
