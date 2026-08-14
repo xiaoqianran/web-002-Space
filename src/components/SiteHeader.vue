@@ -1,5 +1,5 @@
 <template>
-  <header class="nav" v-if="show">
+  <div class="nav" v-if="show">
     <div class="logo" @click="goHome">
       <div class="logo_mark">
         <img :src="$asset('img/logo.png')" alt="logo" />
@@ -10,23 +10,21 @@
       </div>
     </div>
     <div
-      class="nav_button"
-      :class="{ nav_button_open: store.menuOpen }"
+      class="button"
+      :class="store.menuOpen ? 'button_open' : 'button_shut'"
       @click="toggleMenu()"
     >
-      <div class="nav_button_block">
-        <svg viewBox="0 0 120 40" preserveAspectRatio="none">
-          <polygon points="8,4 112,4 120,20 112,36 8,36 0,20" />
-        </svg>
-      </div>
-      <p class="nav_button_text _font_2">{{ store.menuOpen ? 'MENU ✕' : 'MENU ☰' }}</p>
-      <div class="nav_button_icon">
+      <svg viewBox="0 0 550 180" class="button_block">
+        <polygon points="530.85,166.3 56.09,166.3 31.78,145.77 31.78,114.67 19.15,98.95 19.15,33.1 46.32,13.71 494.75,13.71 530.85,47.11" />
+      </svg>
+      <p class="button_text _font_2">MENU</p>
+      <div class="button_icon">
         <div></div>
         <div></div>
         <div></div>
       </div>
     </div>
-  </header>
+  </div>
 </template>
 
 <script setup>

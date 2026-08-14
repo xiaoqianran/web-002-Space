@@ -44,19 +44,21 @@
             :style="{ '--color': w.color }"
           >
             <div class="msb_selection" @click="toggleWorld(w.id)">
-              <p class="_font_2">{{ openWorld === w.id ? '▼' : '▶' }} {{ w.name }}</p>
-              <div class="msb_selection_arrow _arrow_down"></div>
+              <svg viewBox="0 0 200 160"><path d="M100.1,23.4L76.68,1.71c0,0-49.55,0-76.68,0V158.3h200V23.4C166.7,23.4,100.1,23.4,100.1,23.4z M187.9,146.19H12.1V35.49h175.8V146.19z"/><rect x="12.1" y="35.49" width="175.8" height="110.7"/></svg>
+              <p class="_font_3">{{ w.name }}</p>
+              <div class="msb_selection_arrow _arrow_left"></div>
             </div>
             <div class="msb_nodes_container" :class="{ open: openWorld === w.id }">
               <div
                 v-for="node in nodesOf(w)"
                 :key="node.key"
-                class="msb_nodes"
+                class="msb_nodes" :class="{ msb_selection_selected_node: openNode === w.id + '/' + node.key }"
                 :style="{ '--color': w.color }"
               >
                 <div class="msb_selection" @click="toggleNode(w.id, node.key)">
-                  <p class="_font_1">{{ openNode === w.id + '/' + node.key ? '▼' : '▶' }} {{ node.label }}</p>
-                  <div class="msb_selection_arrow _arrow_down"></div>
+                  <svg viewBox="0 0 200 160"><path d="M100.1,23.4L76.68,1.71c0,0-49.55,0-76.68,0V158.3h200V23.4C166.7,23.4,100.1,23.4,100.1,23.4z M187.9,146.19H12.1V35.49h175.8V146.19z"/><rect x="12.1" y="35.49" width="175.8" height="110.7"/></svg>
+                  <p class="_font_3">{{ node.label }}</p>
+                  <div class="msb_selection_arrow _arrow_left"></div>
                 </div>
                 <div class="msb_ids_container" :class="{ open: openNode === w.id + '/' + node.key }">
                   <div
@@ -66,7 +68,9 @@
                     :style="{ '--color': w.color }"
                   >
                     <div class="msb_selection" @click="goItem(w, node.key, item)">
-                      <p class="_font_1">{{ item.name }}</p>
+                      <svg viewBox="0 0 150 200"><polygon points="150,60 150,200 0,200 0,0 90,0 90,60"/><polygon points="150,50 100,50 100,0"/></svg>
+                      <p class="_font_3">{{ item.name }}</p>
+                      <div class="msb_selection_arrow _arrow_left"></div>
                     </div>
                   </div>
                 </div>
