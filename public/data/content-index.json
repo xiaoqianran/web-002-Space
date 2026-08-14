@@ -1,0 +1,875 @@
+{
+  "source": "https://api.cosmicbroth.com/api",
+  "site": "https://www.cosmicbroth.com/",
+  "cdn": "https://cdn.cosmicbroth.com/",
+  "schemas": {
+    "record_meta": {
+      "shape": "object",
+      "keys": [
+        "id",
+        "name",
+        "image_url",
+        "type",
+        "time",
+        "instrution",
+        "world",
+        "worldId",
+        "chapters"
+      ],
+      "notes": "instrution is a typo in the API (instruction). chapters is a list of chapter title strings.",
+      "sample_file": "api/records/goldfish.json"
+    },
+    "chapter": {
+      "shape": "array<string>",
+      "keys": null,
+      "notes": "Plain list of paragraph strings; no title/id fields. Title lives on the parent record.chapters[i].",
+      "sample_file": "api/records/goldfish_c1.json",
+      "sample_len": 32
+    },
+    "portrait": {
+      "shape": "array<object>",
+      "keys": [
+        "name",
+        "information",
+        "portraits"
+      ],
+      "portraits_item_keys": [
+        "image_url",
+        "content"
+      ],
+      "notes": "Each entry is a character/role with a gallery of portraits.",
+      "sample_file": "api/portraits/database.json",
+      "sample_len": 11
+    },
+    "image": {
+      "shape": "array<object>",
+      "keys": [
+        "image_url",
+        "instrution"
+      ],
+      "notes": "Gallery of images with caption/instruction text (instrution typo).",
+      "sample_file": "api/images/vlog.json",
+      "sample_len": 21
+    },
+    "outline": {
+      "shape": "array<object>",
+      "keys": [
+        "contents",
+        "image"
+      ],
+      "notes": "World intro scroll sections; image is a CDN URL.",
+      "sample_file": "api/outline/cosmic-broth.json",
+      "sample_len": 2
+    }
+  },
+  "worlds": [
+    {
+      "id": "cosmic-broth",
+      "name": "宇宙汤",
+      "color": "#178ec5",
+      "x": 40,
+      "y": 60,
+      "r": 1,
+      "introduce": "以荒谬，赛博朋克，搞笑和黑色幽默为主题的星际世界观。这个宇宙的逻辑糟糕透顶，好在有志者必得所求之物。",
+      "image_url": "https://cdn.cosmicbroth.com/1_A561_FDD_060_AE_1_B19_AF_95526_C401_FD_7_A_a9228caba2.png",
+      "star_image_url": "https://cdn.cosmicbroth.com/star_80153f61f1.png",
+      "time_diff": "15",
+      "outline_file": "api/outline/cosmic-broth.json",
+      "outline_sections": 2,
+      "map": {
+        "records": [
+          {
+            "id": "yuzhoutang",
+            "name": "宇宙汤",
+            "introduce": "收录了小说宇宙汤正篇之外的一些碎片化写作。它们介绍了一些万星宇宙的风土人情。于不同的视觉展现这个世界。这真是个差劲的宇宙，不是吗。但是，纵使环境如此，你也要改变吗，你也要得到吗，你的梦想是什么，你愿意为此付出多少——以支持你的追求，响彻宇宙。",
+            "image_url": "https://cdn.cosmicbroth.com/0771_C5638_FE_611584_F27_B8_E6_ECADDEA_4_1_a9c3acc703.png",
+            "type": "normal",
+            "time": "2025-08-14",
+            "world": "宇宙汤",
+            "json_shape": "object keys: id,name,image_url,type,time,instrution,world,worldId,chapters[]",
+            "chapters": [
+              {
+                "id": "c1",
+                "index": 1,
+                "title": "低消费出行",
+                "file": "api/records/yuzhoutang_c1.json",
+                "paragraphs": 86,
+                "bytes": 9535
+              }
+            ]
+          }
+        ],
+        "portraits": [
+          {
+            "id": "database",
+            "name": "database",
+            "introduce": "Ray的人员档案库。它进行尽责的记录着所见到的每一个人。\n硅基将可查询范围内的知识集称之为”智能沼泽“或者”智池“，如果有人类的思想创意能够超出智池范畴，其发言会被硅基们奉为圭臬，并汲取，记录。阅读大量失落媒体或失传纸质图书的人，创造性的艺术家，富有想象力的作者……而然，有学者发现，还有一类人容易被硅基记录在案——富有创意的抽象的弱智。",
+            "image_url": "https://cdn.cosmicbroth.com/IMG_3795_20250817_152046_e4d8a513de.PNG",
+            "json_shape": "array<{name,information,portraits:[{image_url,content}]}>",
+            "role_count": 11,
+            "roles": [
+              {
+                "name": "Meme",
+                "portrait_count": 4
+              },
+              {
+                "name": "总统",
+                "portrait_count": 3
+              },
+              {
+                "name": "Ray",
+                "portrait_count": 2
+              },
+              {
+                "name": "谱蓝",
+                "portrait_count": 3
+              },
+              {
+                "name": "达芙妮·黛塔",
+                "portrait_count": 1
+              },
+              {
+                "name": "游孢赤河彩",
+                "portrait_count": 3
+              },
+              {
+                "name": "白朽",
+                "portrait_count": 1
+              },
+              {
+                "name": "一千夜",
+                "portrait_count": 2
+              },
+              {
+                "name": "涂鸦客",
+                "portrait_count": 2
+              },
+              {
+                "name": "安普洛斯",
+                "portrait_count": 1
+              },
+              {
+                "name": "LUCA",
+                "portrait_count": 1
+              }
+            ],
+            "file": "api/portraits/database.json",
+            "bytes": 8529
+          }
+        ],
+        "images": [
+          {
+            "id": "vlog",
+            "name": "Travel log",
+            "introduce": "宇宙飞船GRAND-STARRS-RAY.som认真地记录着所见所闻。\nray是一种纳米级的硅基生命，可以拟态各种材质，也可以拆解大部分的材料。曾在母星[9C-71V-levels]上被星球上的人类作为城市的建材使用。在levels星球上，ray构成了多个类似地壳的层级，形成了重层的大陆景观。Ray具有记录，监控，构建城市建筑的功能。通过ray，星球的政府可以控制、监控城市的所有角落。它们的制造者是levels星球上的宏星安保公司。ray的名字就是公司的订购产品的网站。公司赋予了Ray“奉行绝对的效率，不浪费能量”的使命。在待机状态时，它们通常会以松散的白色细沙的状态存在。它们想方设法节能。如果没有要求，它们不会为飞船做涂装，也不会制造任何家具。幸好，记录不需要消耗太多能源。\n\n",
+            "image_url": "https://cdn.cosmicbroth.com/IMG_3795_20250817_152103_1d28859e0f.PNG",
+            "json_shape": "array<{image_url,instrution}>",
+            "item_count": 21,
+            "file": "api/images/vlog.json",
+            "bytes": 3517
+          }
+        ]
+      }
+    },
+    {
+      "id": "checkerboard",
+      "name": "地平世界",
+      "color": "#4BC0AB",
+      "x": 65,
+      "y": 40,
+      "r": 1.5,
+      "introduce": "即为不科学，不现实的扁平世界——棋盘上世界。在此收录了偏离棋牌室中主线轨道的棋盘故事和一些假想的可能性。",
+      "image_url": "https://cdn.cosmicbroth.com/IMG_0871_20250824_220223_78eac5900d.PNG",
+      "star_image_url": "https://cdn.cosmicbroth.com/star_7ace939b54.png",
+      "time_diff": "100",
+      "outline_file": "api/outline/checkerboard.json",
+      "outline_sections": 3,
+      "map": {
+        "records": [
+          {
+            "id": "fate",
+            "name": "命数",
+            "introduce": "繁育之主与门之钥的文字游戏。他们二人决定了一个家族的命数，最后，家族的最后一人登上了绞刑架。谁是这场游戏的真正的胜利者？这场游戏恰好成为了双子诞生的序章。",
+            "image_url": "https://cdn.cosmicbroth.com/QQ_20251007215000_fe6312b28f.png",
+            "type": "normal",
+            "time": "2025-08-14",
+            "world": "地平世界",
+            "json_shape": "object keys: id,name,image_url,type,time,instrution,world,worldId,chapters[]",
+            "chapters": [
+              {
+                "id": "c1",
+                "index": 1,
+                "title": "万千子孙命数已定",
+                "file": "api/records/fate_c1.json",
+                "paragraphs": 56,
+                "bytes": 7809
+              }
+            ]
+          }
+        ],
+        "portraits": [
+          {
+            "id": "dreamer",
+            "name": "Dreamer",
+            "introduce": "幻想者，不仅仅意味着棋盘之上的假想，可能性的存在。也代表着游戏中的开拓者——有着大目标，大梦想的人。在地平世界的地图中开疆拓土的冒险者们，何尝不是屹立于现实中的造梦者。",
+            "image_url": "https://cdn.cosmicbroth.com/QQ_20251007212745_26999319e8.jpg",
+            "json_shape": "array<{name,information,portraits:[{image_url,content}]}>",
+            "role_count": 3,
+            "roles": [
+              {
+                "name": "甘明子-勇者",
+                "portrait_count": 2
+              },
+              {
+                "name": "小春-兔魔兽",
+                "portrait_count": 1
+              },
+              {
+                "name": "七粹-圣女",
+                "portrait_count": 1
+              }
+            ],
+            "file": "api/portraits/dreamer.json",
+            "bytes": 2398
+          }
+        ],
+        "images": [
+          {
+            "id": "maps",
+            "name": "Atlas",
+            "introduce": "棋盘上，沙盘中，芸芸众生不过是被概念推动的游戏棋子，而自我意识和自主的选择不过是微小生命的幻梦一场。欢迎来到地平世界（扁平的世界）——在这里，你可以窥见众神游戏箱里的众生之梦。",
+            "image_url": "https://cdn.cosmicbroth.com/03_36f7eeb99d.jpg",
+            "json_shape": "array<{image_url,instrution}>",
+            "item_count": 15,
+            "file": "api/images/maps.json",
+            "bytes": 2906
+          }
+        ]
+      }
+    },
+    {
+      "id": "fogbound-box",
+      "name": "迷雾中古",
+      "color": "#DEC466",
+      "x": 55,
+      "y": 55,
+      "r": 0.6,
+      "introduce": "Fogbound Box，被迷雾隔离的箱子，即为暗箱。在这个匣子中，是一些独立运行的故事。",
+      "image_url": "https://cdn.cosmicbroth.com/IMG_5786_20250817_150321_709d585911.PNG",
+      "star_image_url": "https://cdn.cosmicbroth.com/star_5cf82170c3.png",
+      "time_diff": "20",
+      "outline_file": "api/outline/fogbound-box.json",
+      "outline_sections": 3,
+      "map": {
+        "records": [
+          {
+            "id": "Sevener",
+            "name": "Sevener",
+            "introduce": "基于黑日企划设定进行二次创作的小说，小春（哈鲁）和甘明子（卡梅兹）跟随勇火教团的火行者小队，进入一座名为帕维纳的城池，探寻帕维纳与外界丧失联系的真相。这座小城曾多次易主，累累战争之下，苍白的亡魂沉默的驻守精神的边界……在天灾面前，你愿意成为癫狂的乌合之众，还是理智尚存，固守不群的体面？",
+            "image_url": "https://cdn.cosmicbroth.com/IMG_5763_20250814_125823_b24f739c38.PNG",
+            "type": "normal",
+            "time": "2025-07-05",
+            "world": "迷雾中古",
+            "json_shape": "object keys: id,name,image_url,type,time,instrution,world,worldId,chapters[]",
+            "chapters": [
+              {
+                "id": "c1",
+                "index": 1,
+                "title": "征召与征兆",
+                "file": "api/records/Sevener_c1.json",
+                "paragraphs": 117,
+                "bytes": 20015
+              },
+              {
+                "id": "c2",
+                "index": 2,
+                "title": "迷途与英勇",
+                "file": "api/records/Sevener_c2.json",
+                "paragraphs": 126,
+                "bytes": 22954
+              },
+              {
+                "id": "c3",
+                "index": 3,
+                "title": "癫狂与理性",
+                "file": "api/records/Sevener_c3.json",
+                "paragraphs": 114,
+                "bytes": 17785
+              },
+              {
+                "id": "c4",
+                "index": 4,
+                "title": "合众与不群",
+                "file": "api/records/Sevener_c4.json",
+                "paragraphs": 129,
+                "bytes": 19943
+              },
+              {
+                "id": "c5",
+                "index": 5,
+                "title": "谈判与独行",
+                "file": "api/records/Sevener_c5.json",
+                "paragraphs": 83,
+                "bytes": 13791
+              },
+              {
+                "id": "c6",
+                "index": 6,
+                "title": "文明与不韪",
+                "file": "api/records/Sevener_c6.json",
+                "paragraphs": 81,
+                "bytes": 12834
+              }
+            ]
+          }
+        ],
+        "portraits": [
+          {
+            "id": "rumor",
+            "name": "rumor",
+            "introduce": "fogbound-box，在独立运行的世界中，总有人脱颖而出。芸芸众生中，总有那么一些人成就了时代。他们留下了属于自己的传说，他们的故事口口相传，趋于不朽。在此介绍传闻中的人物，英雄，或者……祸端。",
+            "image_url": "https://cdn.cosmicbroth.com/IMG_5786_20250817_150321_709d585911.PNG",
+            "json_shape": "array<{name,information,portraits:[{image_url,content}]}>",
+            "role_count": 3,
+            "roles": [
+              {
+                "name": "卡梅兹·嘉尔内特",
+                "portrait_count": 3
+              },
+              {
+                "name": "哈鲁·卡特",
+                "portrait_count": 3
+              },
+              {
+                "name": "童钥令&童月麟",
+                "portrait_count": 3
+              }
+            ],
+            "file": "api/portraits/rumor.json",
+            "bytes": 2985
+          }
+        ],
+        "images": [
+          {
+            "id": "darkroom",
+            "name": "darkroom",
+            "introduce": "fogbound-box，透过箱子的观察孔，你看到了一些场景的碎片。它可能来自黑日之下的冒险，可能来自被千年虫蛀穿的后千禧年。",
+            "image_url": "https://cdn.cosmicbroth.com/IMG_5631_20250817_150358_af257b52ff.PNG",
+            "json_shape": "array<{image_url,instrution}>",
+            "item_count": 15,
+            "file": "api/images/darkroom.json",
+            "bytes": 2503
+          }
+        ]
+      }
+    },
+    {
+      "id": "meta-room",
+      "name": "棋盘室",
+      "color": "#9B3B62",
+      "x": 45,
+      "y": 40,
+      "r": 0.6,
+      "introduce": "克苏鲁神话风格的棋牌室。在上层叙事中，众神在名为世界的游戏沙盘中掷下决定命运的骰子。",
+      "image_url": "https://cdn.cosmicbroth.com/original333_751444d005.png",
+      "star_image_url": "https://cdn.cosmicbroth.com/star_cd814e141a.png",
+      "time_diff": "50",
+      "outline_file": "api/outline/meta-room.json",
+      "outline_sections": 2,
+      "map": {
+        "records": [
+          {
+            "id": "goldfish",
+            "name": "金鱼",
+            "introduce": "一个简短的校园小故事：惊喜之余，你拆开包装，看到了那份礼物。能活着就已经足够幸运了，你还打算奢求些什么呢？这个故事隶属于1001故事集的主时间线。是主线的第一篇故事。",
+            "image_url": "https://cdn.cosmicbroth.com/1_249ebafb49.jpg",
+            "type": "normal",
+            "time": "2025-07-05",
+            "world": "棋盘室",
+            "json_shape": "object keys: id,name,image_url,type,time,instrution,world,worldId,chapters[]",
+            "chapters": [
+              {
+                "id": "c1",
+                "index": 1,
+                "title": "开端",
+                "file": "api/records/goldfish_c1.json",
+                "paragraphs": 32,
+                "bytes": 6820
+              },
+              {
+                "id": "c2",
+                "index": 2,
+                "title": "传闻",
+                "file": "api/records/goldfish_c2.json",
+                "paragraphs": 18,
+                "bytes": 3337
+              },
+              {
+                "id": "c3",
+                "index": 3,
+                "title": "怪谈",
+                "file": "api/records/goldfish_c3.json",
+                "paragraphs": 22,
+                "bytes": 5950
+              },
+              {
+                "id": "c4",
+                "index": 4,
+                "title": "心跳",
+                "file": "api/records/goldfish_c4.json",
+                "paragraphs": 49,
+                "bytes": 8403
+              },
+              {
+                "id": "c5",
+                "index": 5,
+                "title": "逢魔",
+                "file": "api/records/goldfish_c5.json",
+                "paragraphs": 41,
+                "bytes": 6977
+              },
+              {
+                "id": "c6",
+                "index": 6,
+                "title": "幕间",
+                "file": "api/records/goldfish_c6.json",
+                "paragraphs": 14,
+                "bytes": 2991
+              },
+              {
+                "id": "c7",
+                "index": 7,
+                "title": "人之缸",
+                "file": "api/records/goldfish_c7.json",
+                "paragraphs": 25,
+                "bytes": 7057
+              },
+              {
+                "id": "c8",
+                "index": 8,
+                "title": "空穴",
+                "file": "api/records/goldfish_c8.json",
+                "paragraphs": 22,
+                "bytes": 4129
+              },
+              {
+                "id": "c9",
+                "index": 9,
+                "title": "空相框",
+                "file": "api/records/goldfish_c9.json",
+                "paragraphs": 28,
+                "bytes": 6081
+              },
+              {
+                "id": "c10",
+                "index": 10,
+                "title": "视觉",
+                "file": "api/records/goldfish_c10.json",
+                "paragraphs": 25,
+                "bytes": 4705
+              },
+              {
+                "id": "c11",
+                "index": 11,
+                "title": "惊（金）喜之余（鱼）",
+                "file": "api/records/goldfish_c11.json",
+                "paragraphs": 19,
+                "bytes": 2695
+              },
+              {
+                "id": "c12",
+                "index": 12,
+                "title": "True Ending：主人公",
+                "file": "api/records/goldfish_c12.json",
+                "paragraphs": 16,
+                "bytes": 2160
+              }
+            ]
+          },
+          {
+            "id": "guovssahas",
+            "name": "天籁",
+            "introduce": "“汝闻人籁而未闻地籁，汝闻地籁而未闻天籁夫！”，狭义上，《齐物论》中的“天籁”是一种起源，可以浅显理解为风声。这个故事隶属于1001故事集的主时间线。是该系列的第二篇故事。",
+            "image_url": "https://cdn.cosmicbroth.com/_d10ebd4745.jpg",
+            "type": "normal",
+            "time": "2023-09-15",
+            "world": "棋盘室",
+            "json_shape": "object keys: id,name,image_url,type,time,instrution,world,worldId,chapters[]",
+            "chapters": [
+              {
+                "id": "c1",
+                "index": 1,
+                "title": "满客",
+                "file": "api/records/guovssahas_c1.json",
+                "paragraphs": 56,
+                "bytes": 10168
+              },
+              {
+                "id": "c2",
+                "index": 2,
+                "title": "琳妮亚",
+                "file": "api/records/guovssahas_c2.json",
+                "paragraphs": 78,
+                "bytes": 11849
+              },
+              {
+                "id": "c3",
+                "index": 3,
+                "title": "向导",
+                "file": "api/records/guovssahas_c3.json",
+                "paragraphs": 112,
+                "bytes": 18972
+              },
+              {
+                "id": "c4",
+                "index": 4,
+                "title": "白桦林",
+                "file": "api/records/guovssahas_c4.json",
+                "paragraphs": 89,
+                "bytes": 13829
+              },
+              {
+                "id": "c5",
+                "index": 5,
+                "title": "黑色、黑色、黑色",
+                "file": "api/records/guovssahas_c5.json",
+                "paragraphs": 56,
+                "bytes": 8356
+              },
+              {
+                "id": "c6",
+                "index": 6,
+                "title": "旧事",
+                "file": "api/records/guovssahas_c6.json",
+                "paragraphs": 89,
+                "bytes": 12312
+              },
+              {
+                "id": "c7",
+                "index": 7,
+                "title": "凝结",
+                "file": "api/records/guovssahas_c7.json",
+                "paragraphs": 116,
+                "bytes": 13225
+              },
+              {
+                "id": "c8",
+                "index": 8,
+                "title": "冲突",
+                "file": "api/records/guovssahas_c8.json",
+                "paragraphs": 88,
+                "bytes": 11230
+              },
+              {
+                "id": "c9",
+                "index": 9,
+                "title": "错过与过错",
+                "file": "api/records/guovssahas_c9.json",
+                "paragraphs": 115,
+                "bytes": 16622
+              },
+              {
+                "id": "c10",
+                "index": 10,
+                "title": "平安夜",
+                "file": "api/records/guovssahas_c10.json",
+                "paragraphs": 86,
+                "bytes": 11118
+              },
+              {
+                "id": "c11",
+                "index": 11,
+                "title": "疯狂",
+                "file": "api/records/guovssahas_c11.json",
+                "paragraphs": 40,
+                "bytes": 4255
+              },
+              {
+                "id": "c12",
+                "index": 12,
+                "title": "追击",
+                "file": "api/records/guovssahas_c12.json",
+                "paragraphs": 48,
+                "bytes": 7873
+              },
+              {
+                "id": "c13",
+                "index": 13,
+                "title": "“极光卵”，天籁",
+                "file": "api/records/guovssahas_c13.json",
+                "paragraphs": 54,
+                "bytes": 6025
+              },
+              {
+                "id": "c14",
+                "index": 14,
+                "title": "蟹骨",
+                "file": "api/records/guovssahas_c14.json",
+                "paragraphs": 22,
+                "bytes": 2239
+              },
+              {
+                "id": "c15",
+                "index": 15,
+                "title": "仓库",
+                "file": "api/records/guovssahas_c15.json",
+                "paragraphs": 33,
+                "bytes": 4149
+              },
+              {
+                "id": "c16",
+                "index": 16,
+                "title": "苏醒",
+                "file": "api/records/guovssahas_c16.json",
+                "paragraphs": 65,
+                "bytes": 7892
+              },
+              {
+                "id": "c17",
+                "index": 17,
+                "title": "法阵",
+                "file": "api/records/guovssahas_c17.json",
+                "paragraphs": 26,
+                "bytes": 3326
+              },
+              {
+                "id": "c18",
+                "index": 18,
+                "title": "破冰",
+                "file": "api/records/guovssahas_c18.json",
+                "paragraphs": 47,
+                "bytes": 5807
+              },
+              {
+                "id": "c19",
+                "index": 19,
+                "title": "破晓",
+                "file": "api/records/guovssahas_c19.json",
+                "paragraphs": 123,
+                "bytes": 10855
+              },
+              {
+                "id": "c20",
+                "index": 20,
+                "title": "后日谈",
+                "file": "api/records/guovssahas_c20.json",
+                "paragraphs": 19,
+                "bytes": 1683
+              }
+            ]
+          },
+          {
+            "id": "sickday",
+            "name": "病栋",
+            "introduce": "Sick for a day，病栋一日。“无色小姐，不用紧张，入院证明办理完毕，现在，你已经算是这里的一员了。”白医生对无色说道。比突然成为精神病院的一员更糟的是，自己好像真的有精神病要治。无色发现自己忘记了很多东西，但是，自己真的应该想起来吗？究竟什么能定义人是人，什么能定义，她是无色呢？",
+            "image_url": "https://cdn.cosmicbroth.com/original333_751444d005.png",
+            "type": "normal",
+            "time": "2025-08-13",
+            "world": "棋盘室",
+            "json_shape": "object keys: id,name,image_url,type,time,instrution,world,worldId,chapters[]",
+            "chapters": [
+              {
+                "id": "c1",
+                "index": 1,
+                "title": "ego自我",
+                "file": "api/records/sickday_c1.json",
+                "paragraphs": 65,
+                "bytes": 11027
+              },
+              {
+                "id": "c2",
+                "index": 2,
+                "title": "人际关系",
+                "file": "api/records/sickday_c2.json",
+                "paragraphs": 74,
+                "bytes": 11538
+              },
+              {
+                "id": "c3",
+                "index": 3,
+                "title": "梦中情人",
+                "file": "api/records/sickday_c3.json",
+                "paragraphs": 81,
+                "bytes": 10998
+              },
+              {
+                "id": "c4",
+                "index": 4,
+                "title": "规则怪谈",
+                "file": "api/records/sickday_c4.json",
+                "paragraphs": 109,
+                "bytes": 14723
+              },
+              {
+                "id": "c5",
+                "index": 5,
+                "title": "bug-虫",
+                "file": "api/records/sickday_c5.json",
+                "paragraphs": 58,
+                "bytes": 12329
+              },
+              {
+                "id": "c6",
+                "index": 6,
+                "title": "叙事层",
+                "file": "api/records/sickday_c6.json",
+                "paragraphs": 62,
+                "bytes": 11568
+              },
+              {
+                "id": "c7",
+                "index": 7,
+                "title": "孤独",
+                "file": "api/records/sickday_c7.json",
+                "paragraphs": 56,
+                "bytes": 8812
+              },
+              {
+                "id": "c8",
+                "index": 8,
+                "title": "白月光",
+                "file": "api/records/sickday_c8.json",
+                "paragraphs": 50,
+                "bytes": 8652
+              },
+              {
+                "id": "c9",
+                "index": 9,
+                "title": "迷信",
+                "file": "api/records/sickday_c9.json",
+                "paragraphs": 62,
+                "bytes": 9397
+              },
+              {
+                "id": "c10",
+                "index": 10,
+                "title": "命运之轮",
+                "file": "api/records/sickday_c10.json",
+                "paragraphs": 50,
+                "bytes": 8027
+              },
+              {
+                "id": "c11",
+                "index": 11,
+                "title": "坍圮",
+                "file": "api/records/sickday_c11.json",
+                "paragraphs": 56,
+                "bytes": 8764
+              },
+              {
+                "id": "c12",
+                "index": 12,
+                "title": "投身于混沌之中（上）",
+                "file": "api/records/sickday_c12.json",
+                "paragraphs": 59,
+                "bytes": 8260
+              },
+              {
+                "id": "c13",
+                "index": 13,
+                "title": "投身于混沌之中（下）",
+                "file": "api/records/sickday_c13.json",
+                "paragraphs": 83,
+                "bytes": 14675
+              },
+              {
+                "id": "c14",
+                "index": 14,
+                "title": "犹未可知",
+                "file": "api/records/sickday_c14.json",
+                "paragraphs": 73,
+                "bytes": 7987
+              }
+            ]
+          }
+        ],
+        "portraits": [
+          {
+            "id": "Chessmen",
+            "name": "Chessmen",
+            "introduce": "置于COC背景下的诸神的桌游社团。位于幻梦境和现实的狭缝之间，配备了KP，骰子，现实沙盘和温馨的装潢，众神在此进行着永无止境的跑团游戏。\n棋盘室的屋顶是无数悬浮的星球模型构成的星空，正中的桌上摆放着投射现实的沙盘。现实中的景物会以沙盘中的拟真玩具显现。（类似微缩景观）智慧生物则以棋子的样子呈现。棋盘室家具风格会配合沙盘的时代背景进行改变。\n棋盘室的主人是骰子和KP，这对聪慧的双子在上层叙事游戏中持续接受挑战。除此之外，他们也是专业且敬业的工作人员：请遵守他们的游戏规则。",
+            "image_url": "https://cdn.cosmicbroth.com/20220513_D_25b2665ffa.jpg",
+            "json_shape": "array<{name,information,portraits:[{image_url,content}]}>",
+            "role_count": 15,
+            "roles": [
+              {
+                "name": "未知&末日",
+                "portrait_count": 1
+              },
+              {
+                "name": "无色",
+                "portrait_count": 3
+              },
+              {
+                "name": "小林",
+                "portrait_count": 2
+              },
+              {
+                "name": "白先生",
+                "portrait_count": 2
+              },
+              {
+                "name": "骰子",
+                "portrait_count": 3
+              },
+              {
+                "name": "KP",
+                "portrait_count": 2
+              },
+              {
+                "name": "安塔娜西亚",
+                "portrait_count": 1
+              },
+              {
+                "name": "翠兰贝特",
+                "portrait_count": 1
+              },
+              {
+                "name": "小春",
+                "portrait_count": 3
+              },
+              {
+                "name": "西缇修",
+                "portrait_count": 1
+              },
+              {
+                "name": "珀斯",
+                "portrait_count": 1
+              },
+              {
+                "name": "戏剧性的主人",
+                "portrait_count": 2
+              },
+              {
+                "name": "败德之神",
+                "portrait_count": 1
+              },
+              {
+                "name": "向导",
+                "portrait_count": 2
+              },
+              {
+                "name": "黛丝普特",
+                "portrait_count": 1
+              }
+            ],
+            "file": "api/portraits/Chessmen.json",
+            "bytes": 14703
+          }
+        ],
+        "images": [
+          {
+            "id": "chessboard",
+            "name": "chessboard",
+            "introduce": "幻梦境之影棋盘室：\n开辟在幻梦境和现世的缝隙里的房间，双子的桌游室。\n对于误入其中的人类，值得注意的是以下规则：\n1.这里是名为幻梦境之影的房间。你已经脱离了现实。当你来到此处，意味着代表你本人的棋子被拿出棋盘。请不要把你的其他同胞拿出沙盘，除非你想再拖几人下水。\n2.你需要赢得游戏，否则就要留下灵魂。\n3.你可以相信骰娘和kp的公正。但是也不用怀疑他们的恶意。\n4.关于幻梦境之影的社团玩家……\n   4-1骰娘和kp是游戏高手，他们很有胜负欲，更何况是和一块小点心决一死战。\n  4-2你就是被“作家”扔出沙盘的。\n  4-3名为“灵感”的玩家会ob每一局游戏。他没有棋子，他会随机推动任何棋子的行动。他是所有棋盘的不确定因素。\n  4-4GM生态箱并不是一个好的选择。我向你保证。物竞天择，适者生存是世界上最残酷的法则。\n5.请享受你的跑团游戏。珍惜你接触到的棋子，欸，不是说了吗，不要将棋子拿出棋盘，碎片也不要，毕竟尸体很占地方。",
+            "image_url": "https://cdn.cosmicbroth.com/2_c29dd5493e.jpg",
+            "json_shape": "array<{image_url,instrution}>",
+            "item_count": 23,
+            "file": "api/images/chessboard.json",
+            "bytes": 4109
+          }
+        ]
+      }
+    }
+  ]
+}
