@@ -46,14 +46,8 @@
       <div
         class="system_pagebox_worlds"
         ref="worldsEl"
-        :style="{ '--angle_rotate': (-angleRotate) + 'deg', '--angle_world': '45deg' }"
-        @mousedown="worldsDown"
-        @touchstart="worldsDown"
-        @mousemove="worldsMove"
-        @touchmove.prevent="worldsMove"
-        @mouseup="worldsUp"
-        @mouseleave="worldsUp"
-        @touchend="worldsUp"
+        :style="{ '--angle_rotate': angleRotate + 'deg', '--angle_world': '45deg' }"
+        @pointerdown="worldsDown"
       >
         <div
           v-for="w in worlds"
@@ -166,6 +160,9 @@ let worlds_x = 0
 let worlds_y = 0
 let mouse_x = 0
 let mouse_y = 0
+let didDrag = false
+let dragStartX = 0
+let dragStartY = 0
 
 const nodes = computed(() => {
   const m = world.value.map || {}
@@ -269,6 +266,7 @@ function showContent() {
 
 function show() {
   if (animater && animater.isActive()) return
+  resizeWorlds()
   animating.value = true
   store.systemOpen = true
   initSlots()
@@ -314,6 +312,7 @@ function hide() {
 }
 
 function selectWorld(id) {
+  if (didDrag) return
   if (!id || !store.worlds[id] || id === store.currentWorldId) return
   if (animater && animater.isActive()) return
   const cur = slots.value.find((s) => !s.outter) || slots.value.find((s) => s.id === store.currentWorldId)
@@ -396,25 +395,43 @@ function jump() {
 }
 
 function eventXY(e) {
-  if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY }
-  return { x: e.clientX ?? e.x ?? 0, y: e.clientY ?? e.y ?? 0 }
+  return { x: e.clientX ?? 0, y: e.clientY ?? 0 }
+}
+
+function bindWorldsWindow(on) {
+  const fn = on ? window.addEventListener : window.removeEventListener
+  fn('pointermove', worldsMove)
+  fn('pointerup', worldsUp)
+  fn('pointercancel', worldsUp)
 }
 
 function worldsDown(e) {
   if_worlds_rotatable = true
+  didDrag = false
+  resizeWorlds()
   const p = eventXY(e)
   mouse_x = p.x
   mouse_y = p.y
+  dragStartX = p.x
+  dragStartY = p.y
+  try { e.currentTarget?.setPointerCapture?.(e.pointerId) } catch {}
+  bindWorldsWindow(true)
 }
 
 function worldsMove(e) {
   if (!if_worlds_rotatable) return
   const p = eventXY(e)
+  if (!didDrag) {
+    const dx = p.x - dragStartX
+    const dy = p.y - dragStartY
+    if (dx * dx + dy * dy > 36) didDrag = true
+  }
   rotateWorlds(p.x, p.y)
 }
 
 function worldsUp() {
   if_worlds_rotatable = false
+  bindWorldsWindow(false)
 }
 
 function rotateWorlds(x, y) {
@@ -502,6 +519,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', resizeWorlds)
+  bindWorldsWindow(false)
   lottieAnims.forEach((a) => { try { a.destroy() } catch {} })
   innerLenis && innerLenis.destroy()
   if (animater) animater.kill()

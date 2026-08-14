@@ -527,13 +527,3 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
   font-size: calc(var(--scale)*1rem);
 }
 .spw_lottie, .spw_lottie > svg, .home-lottie-animation, .home-lottie-animation > svg { display:block; width:100%; height:100%; }
-.spw_lottie svg path,
-.spw_lottie svg circle,
-.spw_lottie svg ellipse,
-.spw_lottie svg polygon,
-.spw_lottie svg polyline,
-.spw_lottie svg rect {
-  fill: unset;
-  stroke: unset;
-  stroke-width: unset;
-}
