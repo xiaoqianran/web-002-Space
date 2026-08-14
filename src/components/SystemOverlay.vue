@@ -153,6 +153,8 @@ const ANGLE_NODE = 45
 const ANGLE_ID = 30
 
 let animater = null
+let swapAnim = null
+let contentAnim = null
 let lottieAnims = []
 let innerLenis = null
 let if_worlds_rotatable = false
@@ -246,7 +248,8 @@ function showDatabox() {
 }
 
 function hiddenContent(cb) {
-  gsap.timeline()
+  if (contentAnim) contentAnim.kill()
+  contentAnim = gsap.timeline()
     .to(dbTitle.value, { y: '100%', duration: 0.8, ease: ease_out })
     .to([dbImage.value, dbContent.value], {
       opacity: 0,
@@ -259,7 +262,8 @@ function hiddenContent(cb) {
 function showContent() {
   innerLenis && innerLenis.scrollTo(0, { immediate: true })
   nextTick(() => innerLenis && innerLenis.resize())
-  gsap.timeline()
+  if (contentAnim) contentAnim.kill()
+  contentAnim = gsap.timeline()
     .to(dbTitle.value, { y: 0, duration: 0.8, ease: ease_out })
     .to([dbImage.value, dbContent.value], { opacity: 1, duration: 0.8, ease: ease_inout }, '<')
 }
@@ -315,6 +319,8 @@ function selectWorld(id) {
   if (didDrag) return
   if (!id || !store.worlds[id] || id === store.currentWorldId) return
   if (animater && animater.isActive()) return
+  if (swapAnim && swapAnim.isActive()) swapAnim.kill()
+  if (contentAnim && contentAnim.isActive()) contentAnim.kill()
   const cur = slots.value.find((s) => !s.outter) || slots.value.find((s) => s.id === store.currentWorldId)
   const next = slots.value.find((s) => s.id === id)
   if (!cur || !next) return
@@ -327,7 +333,7 @@ function selectWorld(id) {
   })
   setTheme(id)
   hiddenContent()
-  animater = gsap.timeline()
+  swapAnim = gsap.timeline()
     .to([nodeEl.value, idEl.value], { opacity: 0, duration: 0.6, ease: ease_out })
     .set([nodeEl.value, idEl.value], { rotate: 0 }, '<0.4')
     .to([nodeEl.value, idEl.value], {
@@ -348,8 +354,9 @@ function selectWorld(id) {
 
 function selectNode(key, index) {
   if (node.value === key || (animater && animater.isActive())) return
+  if (swapAnim && swapAnim.isActive()) return
   hiddenContent()
-  animater = gsap.timeline()
+  swapAnim = gsap.timeline()
     .to(nodeEl.value, { rotate: `${-index * ANGLE_NODE}deg`, duration: 1.5, ease: ease_out })
     .to(idEl.value, { opacity: 0, duration: 0.6, ease: ease_out }, '<')
     .set(idEl.value, { rotate: 0 }, '<0.4')
@@ -368,11 +375,12 @@ function selectNode(key, index) {
 
 function selectId(item, index) {
   if (currentId.value === item.id || (animater && animater.isActive())) return
+  if (swapAnim && swapAnim.isActive()) return
   hiddenContent(() => {
     currentId.value = item.id
     showContent()
   })
-  animater = gsap.timeline().to(idEl.value, {
+  swapAnim = gsap.timeline().to(idEl.value, {
     rotate: `${-index * ANGLE_ID}deg`,
     duration: 1.5,
     ease: ease_out,
@@ -528,5 +536,7 @@ onUnmounted(() => {
   lottieAnims.forEach((a) => { try { a.destroy() } catch {} })
   innerLenis && innerLenis.destroy()
   if (animater) animater.kill()
+  if (swapAnim) swapAnim.kill()
+  if (contentAnim) contentAnim.kill()
 })
 </script>
