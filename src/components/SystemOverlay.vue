@@ -414,7 +414,6 @@ function worldsDown(e) {
   mouse_y = p.y
   dragStartX = p.x
   dragStartY = p.y
-  try { e.currentTarget?.setPointerCapture?.(e.pointerId) } catch {}
   bindWorldsWindow(true)
 }
 
@@ -425,13 +424,19 @@ function worldsMove(e) {
     const dx = p.x - dragStartX
     const dy = p.y - dragStartY
     if (dx * dx + dy * dy > 36) didDrag = true
+    else return
   }
   rotateWorlds(p.x, p.y)
 }
 
-function worldsUp() {
+function worldsUp(e) {
   if_worlds_rotatable = false
   bindWorldsWindow(false)
+  if (!didDrag) {
+    const icon = e?.target?.closest?.('.spw_world_icon')
+    const id = icon?.getAttribute?.('world')
+    if (id) selectWorld(id)
+  }
 }
 
 function rotateWorlds(x, y) {
