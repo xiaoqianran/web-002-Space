@@ -9,12 +9,14 @@
     :style="{ pointerEvents: store.imageview.open ? 'auto' : 'none' }"
     @wheel.prevent="onWheel"
     @click.self="closeView"
+    @touchstart="onViewTouchStart"
+    @touchmove.prevent="onViewTouchMove"
   >
     <div
       ref="imgBox"
       class="imageview_image"
       @mousedown.prevent="startDrag"
-      @touchstart.prevent="startDrag"
+      @touchstart="onImageTouchStart"
     >
       <img :src="$cdn(store.imageview.src)" alt="imageview" decoding="async" />
     </div>
@@ -120,13 +122,56 @@ function closeView() {
   })
 }
 
+let pinchHypot = null
+
+function scaleImage(dir) {
+  iz.value = Math.min(3, Math.max(0.5, iz.value + dir * 0.1))
+  applyImage()
+}
+
+function onViewTouchStart(e) {
+  if (e.touches && e.touches.length === 2) {
+    e.preventDefault()
+    dragging = false
+    pinchHypot = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY,
+    )
+  }
+}
+
+function onViewTouchMove(e) {
+  if (!e.touches || e.touches.length !== 2 || pinchHypot == null) return
+  const n = Math.hypot(
+    e.touches[0].clientX - e.touches[1].clientX,
+    e.touches[0].clientY - e.touches[1].clientY,
+  )
+  scaleImage(Math.sign(n - pinchHypot))
+  pinchHypot = n
+}
+
+function onImageTouchStart(e) {
+  if (e.touches && e.touches.length === 2) {
+    onViewTouchStart(e)
+    return
+  }
+  e.preventDefault()
+  startDrag(e)
+}
+
 function startDrag(e) {
+  if (e.touches && e.touches.length === 2) return
   dragging = true
   const p = e.touches ? e.touches[0] : e
   lx = p.clientX
   ly = p.clientY
   const move = (ev) => {
     if (!dragging) return
+    if (ev.touches && ev.touches.length === 2) {
+      dragging = false
+      onViewTouchStart(ev)
+      return
+    }
     const q = ev.touches ? ev.touches[0] : ev
     ix.value += q.clientX - lx
     iy.value += q.clientY - ly
@@ -136,6 +181,7 @@ function startDrag(e) {
   }
   const up = () => {
     dragging = false
+    pinchHypot = null
     window.removeEventListener('mousemove', move)
     window.removeEventListener('mouseup', up)
     window.removeEventListener('touchmove', move)
@@ -148,8 +194,6 @@ function startDrag(e) {
 }
 
 function onWheel(e) {
-  const dir = e.deltaY < 0 ? 1 : -1
-  iz.value = Math.min(3, Math.max(0.5, iz.value + dir * 0.1))
-  applyImage()
+  scaleImage(e.deltaY < 0 ? 1 : -1)
 }
 </script>

@@ -1,6 +1,5 @@
 <template>
-  <div v-show="store.menuOpen" class="menubox" @keydown.esc.prevent="close">
-    <div class="menubox_mask"></div>
+  <div v-show="if_visible" class="menubox" ref="boxEl" @keydown.esc.prevent="close">
     <div class="menubox_container">
       <div class="menubox_egde menubox_egde_left">
         <div class="menubox_egde_dot _dot"></div>
@@ -9,7 +8,7 @@
 
       <div class="menubox_worldview">
         <p class="menubox_worldview_title _font_2">■ [缩略浏览]::check()</p>
-        <div class="menubox_worldview_box">
+        <div class="menubox_worldview_box" ref="worldviewBox">
           <div class="mwb_title">
             <div></div>
             <p class="_font_2">【{{ preview.name }}】</p>
@@ -95,6 +94,7 @@
         <div class="menubox_egde_dot _dot"></div>
       </div>
     </div>
+    <div class="menubox_mask" ref="maskEl"></div>
   </div>
 </template>
 
@@ -102,19 +102,26 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { store, worldList, currentWorld, toggleMenu, setTheme } from '../store.js'
-import { bindLenis, ease_out, gsap, resizeLenis, scroll_controler } from '../motion.js'
+import { bindLenis, ease_in, ease_out, ease_inout, gsap, resizeLenis, scroll_controler } from '../motion.js'
 
 const route = useRoute()
 const router = useRouter()
 const worlds = computed(() => worldList())
+const if_visible = ref(false)
+const tem_current_world = ref(store.currentWorldId)
 const preview = computed(() => {
-  const id = openWorld.value || store.currentWorldId
+  const id = tem_current_world.value || openWorld.value || store.currentWorldId
   return store.worlds[id] || currentWorld()
 })
 const selecterBox = ref(null)
+const boxEl = ref(null)
+const maskEl = ref(null)
+const worldviewBox = ref(null)
 const openWorld = ref(store.currentWorldId)
 const openNode = ref('')
 let menuLenis = null
+let menuAnim = null
+let worldviewAnim = null
 
 const socials = [
   { k: 'BILI', icon: 'img/social/bilibili.svg', href: 'https://b23.tv/0kFykcQ' },
@@ -149,6 +156,24 @@ function animateHeight(sel, collapse, instant) {
   })
 }
 
+function slideWorldview(id) {
+  const box = worldviewBox.value || document.querySelector('.menubox_worldview_box')
+  if (!box) {
+    tem_current_world.value = id
+    return
+  }
+  if (worldviewAnim && worldviewAnim.isActive()) return
+  worldviewAnim = gsap.timeline()
+    .to(box, { x: '110%', duration: 0.3, ease: ease_in })
+    .fromTo(box, { x: '-110%' }, {
+      x: 0,
+      duration: 0.4,
+      ease: ease_out,
+      immediateRender: false,
+      onStart: () => { tem_current_world.value = id },
+    }, '<0.45')
+}
+
 function toggleWorld(id) {
   if (openWorld.value === id) {
     animateHeight('.msb_selection_selected_world .msb_nodes_container, .msb_selection_selected_node .msb_ids_container', true)
@@ -156,6 +181,7 @@ function toggleWorld(id) {
     openNode.value = ''
     return
   }
+  if (worldviewAnim && worldviewAnim.isActive()) return
   animateHeight('.msb_selection_selected_world .msb_nodes_container, .msb_selection_selected_node .msb_ids_container', true)
   openWorld.value = id
   setTheme(id)
@@ -163,6 +189,7 @@ function toggleWorld(id) {
   nextTick(() => {
     animateHeight('.msb_selection_selected_world .msb_nodes_container', false)
   })
+  slideWorldview(id)
 }
 
 function toggleNode(wid, key) {
@@ -232,34 +259,74 @@ function currentNodeKey() {
   return ''
 }
 
+function resetMenu() {
+  const box = boxEl.value || document.querySelector('.menubox')
+  const mask = maskEl.value || document.querySelector('.menubox_mask')
+  const edges = document.querySelectorAll('.menubox_egde')
+  gsap.timeline()
+    .set(box, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' })
+    .set(mask, { y: 0 })
+    .set(edges, { scale: 1.2, opacity: 0 })
+}
+
+async function showMenu() {
+  scroll_controler?.stop()
+  const world = route.params.world || store.currentWorldId
+  openWorld.value = world
+  tem_current_world.value = world
+  const node = currentNodeKey()
+  openNode.value = node ? `${world}/${node}` : ''
+  resetMenu()
+  if_visible.value = true
+  await nextTick()
+  const box = boxEl.value || document.querySelector('.menubox')
+  const mask = maskEl.value || document.querySelector('.menubox_mask')
+  const edges = document.querySelectorAll('.menubox_egde')
+  if (worldviewBox.value) gsap.set(worldviewBox.value, { x: 0 })
+  const nodes = document.querySelector('.msb_selection_selected_world .msb_nodes_container')
+  const ids = document.querySelector('.msb_selection_selected_node .msb_ids_container')
+  if (nodes) gsap.to(nodes, { height: 'auto', duration: 0.5, ease: ease_out, onComplete: resizeMenuLenis })
+  if (ids) gsap.to(ids, { height: 'auto', duration: 0.5, ease: ease_out, onComplete: resizeMenuLenis })
+  bindMenuLenis()
+  menuLenis?.resize?.()
+  resizeLenis()
+  menuAnim?.kill()
+  menuAnim = gsap.timeline()
+    .to(box, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: 0.6, ease: ease_inout })
+    .to(mask, { y: '100%', duration: 0.6, ease: ease_inout }, '<0.2')
+    .to(edges, { scale: 1, opacity: 1, duration: 1, ease: ease_out }, '<')
+}
+
+function hideMenu() {
+  scroll_controler?.start()
+  destroyMenuLenis()
+  document.querySelectorAll('.msb_nodes_container, .msb_ids_container').forEach((el) => {
+    gsap.set(el, { height: 0 })
+  })
+  const box = boxEl.value || document.querySelector('.menubox')
+  const mask = maskEl.value || document.querySelector('.menubox_mask')
+  menuAnim?.kill()
+  menuAnim = gsap.timeline()
+    .to(mask, { y: 0, duration: 0.5, ease: ease_out })
+    .to(box, {
+      clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)',
+      duration: 0.5,
+      ease: ease_out,
+      onComplete: () => { if_visible.value = false },
+    }, '<0.2')
+  scroll_controler?.resize()
+}
+
 watch(() => store.menuOpen, async (v) => {
-  if (v) {
-    scroll_controler?.stop()
-    const world = route.params.world || store.currentWorldId
-    openWorld.value = world
-    const node = currentNodeKey()
-    openNode.value = node ? `${world}/${node}` : ''
-    await nextTick()
-    const nodes = document.querySelector('.msb_selection_selected_world .msb_nodes_container')
-    const ids = document.querySelector('.msb_selection_selected_node .msb_ids_container')
-    if (nodes) gsap.to(nodes, { height: 'auto', duration: 0.5, ease: ease_out, onComplete: resizeMenuLenis })
-    if (ids) gsap.to(ids, { height: 'auto', duration: 0.5, ease: ease_out, onComplete: resizeMenuLenis })
-    bindMenuLenis()
-    menuLenis?.resize?.()
-    resizeLenis()
-  } else {
-    destroyMenuLenis()
-    document.querySelectorAll('.msb_nodes_container, .msb_ids_container').forEach((el) => {
-      gsap.set(el, { height: 0 })
-    })
-    scroll_controler?.start()
-    scroll_controler?.resize()
-  }
+  if (v) await showMenu()
+  else hideMenu()
 })
 
 onMounted(() => window.addEventListener('keydown', onKey))
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
   destroyMenuLenis()
+  menuAnim?.kill()
+  worldviewAnim?.kill()
 })
 </script>

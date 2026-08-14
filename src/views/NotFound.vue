@@ -6,9 +6,9 @@
     <div class="error_content">
       <div class="error_content_404">404</div>
       <p class="error_reconnect _font_2">RECONNECT</p>
-      <div class="error_content_button" @click="$router.push('/')">
+      <div class="error_content_button" @click="$router.replace('/')">
         <svg viewBox="0 0 40 20"><line x1="0" y1="10" x2="40" y2="10" /><rect x="0" y="8" width="4" height="4" /></svg>
-        <div class="_font_2">RETURN HOME</div>
+        <div class="_font_2">RECONNECT</div>
         <svg viewBox="0 0 40 20"><line x1="0" y1="10" x2="40" y2="10" /><rect x="36" y="8" width="4" height="4" /></svg>
       </div>
     </div>

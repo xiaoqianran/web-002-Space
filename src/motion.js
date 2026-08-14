@@ -1,15 +1,16 @@
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { ref } from 'vue'
 
-gsap.registerPlugin(CustomEase)
+gsap.registerPlugin(CustomEase, ScrollTrigger)
 
 export const ease_in = CustomEase.create('ease_in', 'M0,0 C0.6,0,0.8,0.4,1,1')
 export const ease_out = CustomEase.create('ease_out', 'M0,0 C0.2,0.9,0.45,1,1,1')
 export const ease_inout = CustomEase.create('ease_inout', 'M0,0 C0.7,0,0.3,1,1,1')
 
-export { gsap }
+export { gsap, ScrollTrigger }
 
 const LENIS_BASE = {
   duration: 1,
@@ -39,6 +40,7 @@ export function initGlobalLenis() {
   scroll_controler = createLenis()
   scroll_controler.on('scroll', () => {
     scroll_progress.value = scroll_controler.progress ?? 0
+    ScrollTrigger.update()
   })
   return scroll_controler
 }

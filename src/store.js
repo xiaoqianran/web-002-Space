@@ -333,12 +333,5 @@ export function ready_dialog() {
 }
 
 export function startDialogs() {
-  if (_dialogTimer) clearTimeout(_dialogTimer)
-  _dialogTimer = setTimeout(() => {
-    if (store.systemOpen || store.instructionOpen || store.menuOpen) {
-      ready_dialog()
-      return
-    }
-    showAd()
-  }, 12000)
+  ready_dialog()
 }
