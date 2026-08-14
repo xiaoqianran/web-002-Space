@@ -2,7 +2,7 @@
   <div class="worldpage" ref="root">
     <div class="worldpage_grid"></div>
     <div class="worldpage_bg">
-      <img :src="world.image_url" :alt="world.name" />
+      <img :src="$cdn(world.image_url)" :alt="world.name" decoding="async" fetchpriority="high" />
     </div>
     <div class="worldpage_body">
       <div class="worldpage_content">
@@ -16,7 +16,7 @@
               class="worldpage_para _font_4"
             >{{ para }}</p>
             <div v-if="block.image" class="worldpage_inline">
-              <img :src="block.image" alt="" />
+              <img :src="$cdn(block.image)" alt="" decoding="async" loading="lazy" />
             </div>
           </div>
         </div>
@@ -34,6 +34,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
 import { store, setTheme } from '../store.js'
+import { preload } from '../assets.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -61,6 +62,13 @@ async function load() {
     store.outlines[id] = data
     outline.value = data
   }
+  const thumbs = [world.value.image_url]
+  for (const node of Object.values(store.introduces?.[id] || {})) {
+    for (const item of Object.values(node || {})) {
+      if (item?.image_url) thumbs.push(item.image_url)
+    }
+  }
+  preload(thumbs.slice(0, 8))
   root.value?.scrollTo?.(0, 0)
 }
 

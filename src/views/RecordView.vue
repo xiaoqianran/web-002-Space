@@ -13,7 +13,7 @@
       </div>
       <div class="information_middle">
         <div class="information_middle_image">
-          <img v-if="meta.image_url" :src="meta.image_url" alt="information" />
+          <img v-if="meta.image_url" :src="$cdn(meta.image_url)" alt="information" decoding="async" />
         </div>
         <div class="information_middle_content">
           <div class="information_middle_content_instrution">

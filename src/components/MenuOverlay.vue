@@ -17,7 +17,7 @@
           </div>
           <div class="mwb_content">
             <div class="mwb_content_image">
-              <img :src="preview.image_url" :alt="preview.name" />
+              <img :src="$cdn(preview.image_url)" :alt="preview.name" decoding="async" />
             </div>
             <div class="mwb_content_container">
               <p class="mwb_content_introduction _font_1">{{ preview.introduce }}</p>
@@ -84,6 +84,7 @@
         <div class="menubox_egde_dot _dot"></div>
         <div class="menubox_egde_right_icons">
           <a v-for="s in socials" :key="s.k" :href="s.href" target="_blank" rel="noreferrer" :title="s.k">
+            <img :src="$asset(s.icon)" :alt="s.k" />
             <span class="_font_1">{{ s.k }}</span>
           </a>
         </div>
@@ -110,9 +111,9 @@ const openWorld = ref(store.currentWorldId)
 const openNode = ref('')
 
 const socials = [
-  { k: 'BILI', href: 'https://b23.tv/0kFykcQ' },
-  { k: 'WB', href: 'https://weibo.com/u/5652161753' },
-  { k: '小说', href: 'https://changdunovel.com/wap/share-v2.html?&book_id=7522080164855942206&share_code=xqpvRmoYGDWFCVOrdvXQC__rR3BMUmS67C6Ik5kwfL8%3D' },
+  { k: 'BILI', icon: 'img/social/bilibili.svg', href: 'https://b23.tv/0kFykcQ' },
+  { k: 'WB', icon: 'img/social/weibo.svg', href: 'https://weibo.com/u/5652161753' },
+  { k: '小说', icon: 'img/social/novel.svg', href: 'https://changdunovel.com/wap/share-v2.html?&book_id=7522080164855942206&share_code=xqpvRmoYGDWFCVOrdvXQC__rR3BMUmS67C6Ik5kwfL8%3D' },
 ]
 
 const NODE_LABEL = { records: 'records', portraits: 'portraits', images: 'images' }

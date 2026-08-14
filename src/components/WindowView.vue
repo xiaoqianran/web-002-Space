@@ -11,7 +11,7 @@
     @touchend="onUp"
   >
     <div class="windowview_backgroud" ref="bgEl">
-      <img class="windowview_backgroud_image" :src="BG" alt="background" />
+      <img class="windowview_backgroud_image" :src="BG" alt="background" decoding="async" fetchpriority="high" />
       <canvas ref="canvas" class="windowview_backgroud_stars"></canvas>
     </div>
     <div class="windowview_stars" ref="starsEl">
@@ -25,7 +25,7 @@
         @pointerleave="hoverStar(null)"
         @click.stop="checkShow(w.id, $event.currentTarget)"
       >
-        <img :src="w.star_image_url" :alt="w.name" />
+        <img :src="$cdn(w.star_image_url)" :alt="w.name" decoding="async" />
       </div>
       <div
         v-for="(u, i) in store.unknownWorlds"
@@ -33,7 +33,7 @@
         class="windowview_stars_star windowview_stars_star_unknown"
         :style="{ left: u.x + '%', top: u.y + '%', '--r': u.r || 1 }"
       >
-        <img :src="u.image_url" alt="unknown" />
+        <img :src="$cdn(u.image_url)" alt="unknown" decoding="async" />
       </div>
 
       <div class="windowview_stars_information" ref="infoEl">
@@ -125,9 +125,10 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { store, worldList, setTheme } from '../store.js'
 import { gsap, ease_out } from '../motion.js'
+import { cdn, STARFIELD } from '../assets.js'
 
 const router = useRouter()
-const BG = 'https://cdn.cosmicbroth.com/background_436870b549.jpg'
+const BG = cdn(STARFIELD)
 const isTouch = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
 
 const root = ref(null)

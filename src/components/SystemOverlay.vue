@@ -8,7 +8,7 @@
       <div class="system_databox_main">
         <div class="sdm_block">
           <div class="sdm_block_image" ref="dbImage">
-            <img :src="dbImageUrl" alt="world" />
+            <img :src="$cdn(dbImageUrl)" alt="world" decoding="async" fetchpriority="high" />
           </div>
         </div>
         <svg class="sdm_web" viewBox="0 0 200 260">
@@ -68,7 +68,7 @@
           >
             <div>
               <div class="spw_lottie" :data-world="w.id">
-                <img v-if="!w.compass" :src="w.star_image_url" :alt="w.name" />
+                <img v-if="!w.compass" :src="$cdn(w.star_image_url)" :alt="w.name" decoding="async" />
               </div>
             </div>
           </div>

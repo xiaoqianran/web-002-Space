@@ -22,7 +22,7 @@
         :style="cellStyle(cell)"
         @click="open(cell)"
       >
-        <img :src="cell.item.image_url" alt="image" />
+        <img :src="$cdn(cell.item.image_url)" alt="image" decoding="async" loading="lazy" />
         <p class="imove_tip _font_1">{{ cell.n }}</p>
       </div>
     </div>
@@ -39,7 +39,7 @@
       </div>
     </div>
     <div v-show="picked" class="iview" ref="viewbox" @click.self="hideView">
-      <img class="hero viewbox_imagebox_image" :src="picked?.image_url" alt="view" @click="showImageview(picked.image_url)" />
+      <img class="hero viewbox_imagebox_image" :src="$cdn(picked?.image_url)" alt="view" decoding="async" @click="showImageview(picked.image_url)" />
       <p class="iview_txt _font_1">{{ picked?.instrution }}</p>
       <div class="page-return page-return_bottom" @click="hideView"><ReturnButton /></div>
     </div>
@@ -51,6 +51,7 @@ import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
 import { setTheme, showImageview } from '../store.js'
+import { preload } from '../assets.js'
 import { gsap, ease_out } from '../motion.js'
 import ReturnButton from '../components/ReturnButton.vue'
 
@@ -205,6 +206,7 @@ async function load() {
   const data = await api.images(route.params.id)
   items.value = Array.isArray(data) ? data : []
   layout()
+  preload(items.value.slice(0, 8).map((it) => it.image_url))
 }
 
 watch(() => route.fullPath, load, { immediate: true })

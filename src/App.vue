@@ -15,7 +15,7 @@
       @mousedown.prevent="startDrag"
       @touchstart.prevent="startDrag"
     >
-      <img :src="store.imageview.src" alt="imageview" />
+      <img :src="$cdn(store.imageview.src)" alt="imageview" decoding="async" />
     </div>
     <p class="imageview_tip _font_2">+ 拖拽移动图片，滑动滚轮/双指捏合缩放图片 +</p>
     <div class="imageview_return" @click="closeView">

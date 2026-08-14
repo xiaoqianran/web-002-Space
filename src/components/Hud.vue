@@ -69,15 +69,15 @@
         <div class="uibox_middle_links_icons">
           <a href="https://weibo.com/u/5652161753" target="_blank" rel="noreferrer" class="_clip_edge">
             <div></div>
-            <span class="_font_1">WB</span>
+            <img :src="$asset('img/social/weibo.svg')" alt="weibo" />
           </a>
           <a href="https://b23.tv/0kFykcQ" target="_blank" rel="noreferrer" class="_clip_edge">
             <div></div>
-            <span class="_font_1">BILI</span>
+            <img :src="$asset('img/social/bilibili.svg')" alt="bilibili" />
           </a>
           <a :href="NOVEL" target="_blank" rel="noreferrer" class="_clip_edge">
             <div></div>
-            <span class="_font_1">小说</span>
+            <img :src="$asset('img/social/novel.svg')" alt="novel" />
           </a>
         </div>
       </div>

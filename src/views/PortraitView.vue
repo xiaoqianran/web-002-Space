@@ -21,7 +21,7 @@
       >
         <div class="paortraitsbox_portrait_imagebox scatter_clip">
           <div class="paortraitsbox_portrait_imagebox_image">
-            <img :src="role.portraits?.[0]?.image_url" :alt="role.name" />
+            <img :src="$cdn(role.portraits?.[0]?.image_url)" :alt="role.name" decoding="async" :loading="i < 4 ? 'eager' : 'lazy'" />
           </div>
         </div>
         <div class="paortraitsbox_portrait_content">
@@ -43,7 +43,7 @@
             :class="{ selected: i === imgI }"
             @click="pickImg(i, img.image_url)"
           >
-            <img :src="img.image_url" alt="portrait" />
+            <img :src="$cdn(img.image_url)" alt="portrait" decoding="async" loading="lazy" />
           </div>
         </div>
       </div>
@@ -59,6 +59,7 @@ import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
 import { setTheme, showImageview } from '../store.js'
+import { preload } from '../assets.js'
 import { gsap, ease_out } from '../motion.js'
 import ReturnButton from '../components/ReturnButton.vue'
 
@@ -136,6 +137,7 @@ async function load() {
   roles.value = Array.isArray(data) ? data : []
   offsets.value = roles.value.map(() => Math.random() + 1)
   roles.value.forEach((_, i) => shown.add(i))
+  preload(roles.value.slice(0, 6).map((r) => r.portraits?.[0]?.image_url))
   if (roles.value[0]) onHover(0)
 }
 
