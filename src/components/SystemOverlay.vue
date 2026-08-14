@@ -3,7 +3,7 @@
     <div class="system_background" @click="hide"></div>
     <div class="system_databox" ref="databox">
       <div class="system_databox_title">
-        <p class="_font_2" ref="dbTitle">WORLD / <span>{{ world.id }}</span></p>
+        <p class="_font_2" ref="dbTitle">{{ world.name }} / {{ node }} / <span class="_font_4">{{ currentName }}</span></p>
       </div>
       <div class="system_databox_main">
         <div class="sdm_block">
@@ -11,9 +11,7 @@
             <img :src="$cdn(dbImageUrl)" alt="world" decoding="async" fetchpriority="high" />
           </div>
         </div>
-        <svg class="sdm_web" viewBox="0 0 200 260">
-          <image :href="$asset('img/web.svg')" width="200" height="260" />
-        </svg>
+        <img class="sdm_web" :src="$asset('img/web.svg')" alt="databox_web" />
         <div class="sdm_content" ref="dbContent">
           <div class="sdm_content_sections" ref="secs">
             <p class="_font_2">{{ world.name }}</p>
@@ -24,9 +22,11 @@
       </div>
       <div class="system_databox_bottom">
         <div class="sdb_code">
-          <div class="_font_1" style="color:var(--color_theme)">[WORLD.OVERVIEW]</div>
-          <div class="_font_1" style="color:var(--color_theme)">INITIALIZING…</div>
-          <div class="_font_1" style="color:var(--color_theme)">→ {{ node }} / {{ currentId }}</div>
+          <div
+            v-for="(ch, i) in codeChars"
+            :key="i"
+            :style="{ '--s': ch, '--i': i, '--l': codeChars.length }"
+          ></div>
         </div>
         <div class="sdb_button" ref="dbButton" @click.stop="jump">
           <p class="_font_2">ACCESS-></p>
@@ -34,6 +34,8 @@
             <div></div>
             <div style="--d:0"></div>
             <div style="--d:0.3"></div>
+            <div style="--d:0.6"></div>
+            <div style="--d:1"></div>
           </div>
         </div>
       </div>
@@ -74,14 +76,8 @@
       </div>
       <div class="system_pagebox_compass" ref="compassEl" :class="{ system_pagebox_compass_show: store.systemOpen }">
         <svg class="spc_pattern" viewBox="0 0 500 500">
-          <g class="spc_pattern_outer">
-            <circle cx="250" cy="250" r="230" fill="none" stroke="#f3f3f3" stroke-width="0.6" />
-            <circle cx="250" cy="250" r="210" fill="none" stroke="#f3f3f3" stroke-width="0.4" stroke-dasharray="4 8" />
-          </g>
-          <g class="spc_pattern_inner">
-            <circle cx="250" cy="250" r="140" fill="none" stroke="#f3f3f3" stroke-width="0.8" />
-            <circle cx="250" cy="250" r="90" fill="none" stroke="var(--color_theme)" stroke-width="1" />
-          </g>
+          <image class="spc_pattern_inner" :href="$asset('img/compass_inner.svg')" width="500" height="500" />
+          <image class="spc_pattern_outer" :href="$asset('img/compass_outer.svg')" width="600" height="600" x="-50" y="-50" />
           <path class="spc_pattern_dropline" d="M369.65,448.14c-34.58,20.3-74.81,32.02-117.8,32.23c-43.79,0.21-84.83-11.57-120.04-32.23" />
           <g class="spc_pattern_dashline">
             <path d="M413.4,211.84c2.85,12.09,4.38,24.69,4.44,37.64c0.19,39.78-13.54,76.38-36.62,105.19" />
@@ -104,7 +100,7 @@
             :style="{ '--i': i, '--a': 45 }"
             @click.stop="selectNode(n.key, i)"
           >
-            <p class="_font_3">{{ n.key.toUpperCase() }}</p>
+            <p class="_font_3" @click.stop="selectNode(n.key, i)">{{ n.key }}</p>
           </div>
         </div>
         <div class="spc_id" ref="idEl">
@@ -116,7 +112,7 @@
             :style="{ '--i': i, '--a': 30 }"
             @click.stop="selectId(it, i)"
           >
-            <p class="_font_3">{{ it.name }}</p>
+            <p class="_font_3" @click.stop="selectId(it, i)">{{ it.name }}</p>
           </div>
         </div>
       </div>
@@ -190,6 +186,9 @@ const introEntry = computed(() => {
 
 const dbIntroduce = computed(() => introEntry.value?.introduce || world.value.introduce || '')
 const dbImageUrl = computed(() => introEntry.value?.image_url || world.value.image_url || '')
+const currentName = computed(() => ids.value.find((x) => x.id === currentId.value)?.name || currentId.value || '')
+const CODE_STR = "'123122132212541212544512365444565122152"
+const codeChars = CODE_STR.split('')
 
 const slots = ref([])
 
@@ -448,12 +447,13 @@ function loadLottie() {
       el.innerHTML = ''
       if (data) {
         try {
+          const animationData = typeof data === 'string' ? JSON.parse(data) : JSON.parse(JSON.stringify(data))
           const anim = lottie.loadAnimation({
             container: el,
             renderer: 'svg',
             loop: true,
             autoplay: true,
-            animationData: typeof data === 'string' ? JSON.parse(data) : data,
+            animationData,
           })
           lottieAnims.push(anim)
           return
