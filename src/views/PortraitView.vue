@@ -1,7 +1,7 @@
 <template>
   <div class="portraits-page">
     <div class="page-bg-grid"></div>
-    <div class="page-return page-return_bottom" @click="back"><ReturnButton /></div>
+    <div v-show="!viewOpen" class="page-return page-return_bottom" @click="back"><ReturnButton /></div>
     <div class="pdata system" ref="sysEl">
       <p class="pdata_k _font_1">DATA SYSTEM</p>
       <p class="pdata_title _font_2">ACCESS OBJECT: {{ typedName }}</p>
@@ -49,7 +49,7 @@
       </div>
       <p class="pview_cap _font_1">{{ current?.name }} ◆ {{ imgI + 1 }}-{{ current?.portraits?.length }}</p>
       <p class="pview_cap _font_2">{{ current?.portraits?.[imgI]?.content }}</p>
-      <div class="page-return page-return_bottom" @click="hideView"><ReturnButton /></div>
+      <div v-show="!store.imageview.open" class="overlay-return" @click.stop="hideView"><ReturnButton /></div>
     </div>
   </div>
 </template>
@@ -58,7 +58,7 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
-import { setTheme, showImageview } from '../store.js'
+import { store, setTheme, showImageview } from '../store.js'
 import { preload } from '../assets.js'
 import { gsap, ease_out } from '../motion.js'
 import ReturnButton from '../components/ReturnButton.vue'
@@ -198,8 +198,20 @@ function onUp() {
   })
 }
 
+function onKey(e) {
+  if (e.key !== 'Escape') return
+  if (store.menuOpen || store.systemOpen || store.consoleOpen || store.imageview.open) return
+  if (!viewOpen.value) return
+  e.preventDefault()
+  hideView()
+}
+
 watch(() => route.fullPath, load, { immediate: true })
 onMounted(() => {
   if (sysEl.value) gsap.set(sysEl.value, { opacity: 0.2 })
+  window.addEventListener('keydown', onKey)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKey)
 })
 </script>

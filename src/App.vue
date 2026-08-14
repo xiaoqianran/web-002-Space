@@ -19,14 +19,14 @@
       <img :src="$cdn(store.imageview.src)" alt="imageview" decoding="async" />
     </div>
     <p class="imageview_tip _font_2">+ 拖拽移动图片，滑动滚轮/双指捏合缩放图片 +</p>
-    <div class="imageview_return" @click="closeView">
+    <div v-show="store.imageview.open" class="imageview_return" @click.stop="closeView">
       <ReturnButton />
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { store, hideImageview, boot } from './store.js'
 import { gsap, ease_out, initGlobalLenis, scroll_controler } from './motion.js'
@@ -57,10 +57,23 @@ function applyPageScroll() {
   }
 }
 
+function onKey(e) {
+  if (e.key !== 'Escape') return
+  if (store.menuOpen || store.systemOpen || store.consoleOpen) return
+  if (!store.imageview.open) return
+  e.preventDefault()
+  closeView()
+}
+
 onMounted(() => {
   initGlobalLenis()
   applyPageScroll()
   gsap.set('.imageview', { opacity: 0 })
+  window.addEventListener('keydown', onKey)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKey)
 })
 
 watch(() => route.fullPath, applyPageScroll)
@@ -93,6 +106,7 @@ function applyImage() {
 }
 
 function closeView() {
+  if (!store.imageview.open) return
   gsap.to('.imageview', {
     opacity: 0,
     duration: 0.6,

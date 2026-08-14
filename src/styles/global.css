@@ -36,7 +36,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .imageview_image{position:relative;max-width:90vw;max-height:80vh;cursor:grab}
 .imageview_image img{max-width:90vw;max-height:80vh;pointer-events:none}
 .imageview_tip{position:absolute;bottom:calc(var(--scale)*4rem);color:var(--color_white);opacity:.8}
-.imageview_return{position:absolute;bottom:var(--margin_y);left:var(--margin_x);pointer-events:auto}
+.imageview_return{position:absolute;bottom:var(--margin_y);left:var(--margin_x)}
 
 /* page chrome for records/portraits/images */
 .page{min-height:100dvh;width:100%;overflow:auto;position:relative;background:var(--color_black);flex-direction:column;align-items:center}
@@ -124,7 +124,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .paortraitsbox_portrait:hover .paortraitsbox_portrait_imagebox_image img{transform:scale(1.05)}
 .paortraitsbox_portrait_content{flex-direction:column;margin-top:calc(var(--scale)*.4rem)}
 .paortraitsbox_portrait_content_letters{color:var(--color_white)}
-.pview{position:fixed;inset:0;z-index:40;background:#000013f0;flex-direction:column;align-items:center;justify-content:center}
+.pview{position:fixed;inset:0;z-index:45;background:#000013f0;flex-direction:column;align-items:center;justify-content:center}
 .pview_strip{width:100%;overflow:hidden;align-items:center;height:60vh}
 .pview_track{align-items:center;gap:calc(var(--scale)*1.2rem);padding:0 10vw;cursor:grab}
 .pview_img{height:50vh;width:auto;border:var(--border_s) solid transparent;cursor:pointer;position:relative}
@@ -142,7 +142,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .dragtip{position:fixed;inset:0;align-items:center;justify-content:center;pointer-events:none;z-index:8}
 .dragtip.hidden{opacity:0;transition:opacity .6s}
 .dragtip_main_content{flex-direction:column;align-items:center;padding:calc(var(--scale)*1rem);border:var(--border_s) solid var(--color_white);background:#000013aa}
-.iview{position:fixed;inset:0;z-index:30;background:#000013ee;flex-direction:column;align-items:center;justify-content:center}
+.iview{position:fixed;inset:0;z-index:45;background:#000013ee;flex-direction:column;align-items:center;justify-content:center}
 .iview img.hero{max-width:70vw;max-height:60vh}
 .iview_txt{width:60%;color:var(--color_white);margin-top:calc(var(--scale)*1rem);line-height:var(--line_height_1);white-space:pre-wrap;justify-content:center;text-align:center}
 
@@ -337,6 +337,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .information_top_title{position:relative;z-index:1}
 .page-return_bottom{top:auto;bottom:var(--margin_y);left:var(--margin_x)}
 .page-return{z-index:40}
+.overlay-return{position:absolute;bottom:var(--margin_y);left:var(--margin_x);z-index:2;pointer-events:auto}
 
 /* portraits scatter */
 .portraits-page{padding-top:calc(var(--scale)*7rem)}

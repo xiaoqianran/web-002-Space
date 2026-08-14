@@ -1,6 +1,6 @@
 <template>
   <div class="images-page">
-    <div class="page-return page-return_bottom" @click="back"><ReturnButton /></div>
+    <div v-show="!picked" class="page-return page-return_bottom" @click="back"><ReturnButton /></div>
     <div class="viewfinder">
       <i class="vf vf_tl"></i><i class="vf vf_tr"></i><i class="vf vf_bl"></i><i class="vf vf_br"></i>
     </div>
@@ -41,7 +41,7 @@
     <div v-show="picked" class="iview" ref="viewbox" @click.self="hideView">
       <img class="hero viewbox_imagebox_image" :src="$cdn(picked?.image_url)" alt="view" decoding="async" @click="showImageview(picked.image_url)" />
       <p class="iview_txt _font_1">{{ picked?.instrution }}</p>
-      <div class="page-return page-return_bottom" @click="hideView"><ReturnButton /></div>
+      <div v-show="!store.imageview.open" class="overlay-return" @click.stop="hideView"><ReturnButton /></div>
     </div>
   </div>
 </template>
@@ -50,7 +50,7 @@
 import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
-import { setTheme, showImageview } from '../store.js'
+import { store, setTheme, showImageview } from '../store.js'
 import { preload } from '../assets.js'
 import { gsap, ease_out } from '../motion.js'
 import ReturnButton from '../components/ReturnButton.vue'
@@ -209,15 +209,25 @@ async function load() {
   preload(items.value.slice(0, 8).map((it) => it.image_url))
 }
 
+function onKey(e) {
+  if (e.key !== 'Escape') return
+  if (store.menuOpen || store.systemOpen || store.consoleOpen || store.imageview.open) return
+  if (!picked.value) return
+  e.preventDefault()
+  hideView()
+}
+
 watch(() => route.fullPath, load, { immediate: true })
 onMounted(() => {
   pan.x = -80
   pan.y = -40
   window.addEventListener('resize', layout)
+  window.addEventListener('keydown', onKey)
 })
 onUnmounted(() => {
   if (raf) cancelAnimationFrame(raf)
   window.removeEventListener('resize', layout)
+  window.removeEventListener('keydown', onKey)
   if (dragTipTimer) clearTimeout(dragTipTimer)
 })
 </script>
