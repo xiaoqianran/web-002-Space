@@ -201,12 +201,12 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .system_background{z-index:0}
 .system_databox{z-index:2}
 .system_pagebox{z-index:3;overflow:visible}
-.system_pagebox_compass{z-index:4;pointer-events:none}
-.system_pagebox_worlds{z-index:8;pointer-events:auto}
-.system_pagebox_worlds .spw_world{z-index:10;pointer-events:auto;cursor:pointer}
+.system_pagebox_compass{z-index:9;pointer-events:none}
+.system_pagebox_worlds{z-index:8;pointer-events:none}
+.system_pagebox_worlds .spw_world{z-index:10;pointer-events:none;cursor:pointer}
 .system_pagebox_worlds .spw_world_icon{pointer-events:auto}
 .system_pagebox_worlds .spw_world_icon>div{pointer-events:none}
-.system_pagebox_worlds .spw_world_icon_outter{transform:translateY(-92%)}
+.system_pagebox_worlds .spw_world_icon_outter{transform:translateY(-200%)}
 .system_pagebox_worlds .spw_world_icon img{width:70%;height:70%;object-fit:contain;pointer-events:none}
 .spw_world_name{position:absolute;bottom:calc(var(--scale)*-1.2rem);left:50%;transform:translateX(-50%);color:var(--color_white);white-space:nowrap;pointer-events:none;opacity:.85}
 .spc_center{position:absolute;z-index:12;align-items:center;justify-content:center;width:calc(var(--scale)*7rem);height:calc(var(--scale)*7rem);cursor:pointer;pointer-events:auto}
@@ -379,7 +379,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .uibox_shipbox_info{pointer-events:auto;cursor:pointer}
 .sdb_code{flex-direction:column;align-items:start;gap:2px}
 .spw_lottie{width:100%;height:100%;align-items:center;justify-content:center}
-.spw_lottie svg,.spw_lottie img{width:70%;height:70%;object-fit:contain}
+.spw_lottie svg,.spw_lottie img{width:70%;height:70%;max-width:70%;object-fit:contain}
 .imageview{opacity:0;pointer-events:none}
 .loading_middle{opacity:0}
 .loading_codewall{opacity:0}
@@ -446,3 +446,19 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
   z-index: 4;
   pointer-events: none;
 }
+
+
+/* console ring labels — unmissable RECORDS / PORTRAITS / IMAGES */
+.spc_node, .spc_id { z-index: 4; pointer-events: none; }
+.spc_node_selection, .spc_id_selection { pointer-events: none; }
+.spc_node_selection p, .spc_id_selection p {
+  pointer-events: all;
+  z-index: 5;
+  color: var(--color_white);
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: 0.08em;
+  font-family: zpix;
+  font-size: calc(var(--scale)*1rem);
+}
+.spw_lottie svg, .spw_lottie img { width:70%; height:70%; max-width:70%; }

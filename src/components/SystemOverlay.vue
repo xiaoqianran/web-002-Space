@@ -44,7 +44,7 @@
       <div
         class="system_pagebox_worlds"
         ref="worldsEl"
-        :style="{ '--angle_rotate': angleRotate + 'deg', '--angle_world': '90deg' }"
+        :style="{ '--angle_rotate': (-angleRotate) + 'deg', '--angle_world': '45deg' }"
         @mousedown="worldsDown"
         @touchstart="worldsDown"
         @mousemove="worldsMove"
@@ -54,25 +54,22 @@
         @touchend="worldsUp"
       >
         <div
-          v-for="(w, i) in worlds"
+          v-for="w in worlds"
           :key="w.id"
           class="spw_world"
           :class="{ spw_world_current: w.id === store.currentWorldId }"
-          :style="{ '--index': worldIndex(w.id), '--n': worlds.length }"
-          @click.stop="selectWorld(w.id, $event.currentTarget)"
+          :style="{ '--index': slotOf(w.id).index, '--n': worlds.length }"
         >
           <div
             class="spw_world_icon"
-            :class="{ spw_world_icon_outter: w.id !== store.currentWorldId }"
+            :class="{ spw_world_icon_outter: slotOf(w.id).outter }"
             :world="w.id"
+            @click.stop="selectWorld(w.id)"
           >
             <div>
-              <div class="spw_lottie" :data-world="w.id">
-                <img v-if="!w.compass" :src="$cdn(w.star_image_url)" :alt="w.name" decoding="async" />
-              </div>
+              <div class="spw_lottie" :data-world="w.id"></div>
             </div>
           </div>
-          <p class="spw_world_name _font_1">{{ w.name }}</p>
         </div>
       </div>
       <div class="system_pagebox_compass" ref="compassEl" :class="{ system_pagebox_compass_show: store.systemOpen }">
@@ -107,7 +104,7 @@
             :style="{ '--i': i, '--a': 45 }"
             @click.stop="selectNode(n.key, i)"
           >
-            <p class="_font_3">{{ n.key }}</p>
+            <p class="_font_3">{{ n.key.toUpperCase() }}</p>
           </div>
         </div>
         <div class="spc_id" ref="idEl">
@@ -136,6 +133,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import lottie from 'lottie-web'
 import { store, worldList, currentWorld, setTheme, closeSystem } from '../store.js'
+import { cdn } from '../assets.js'
 import { gsap, ease_out, ease_in, ease_inout, createLenis } from '../motion.js'
 import ReturnButton from './ReturnButton.vue'
 
@@ -175,9 +173,7 @@ let mouse_y = 0
 
 const nodes = computed(() => {
   const m = world.value.map || {}
-  return ['records', 'portraits', 'images']
-    .filter((k) => m[k] && Object.keys(m[k]).length)
-    .map((k) => ({ key: k }))
+  return Object.keys(m).map((k) => ({ key: k }))
 })
 
 const ids = computed(() => {
@@ -195,15 +191,19 @@ const introEntry = computed(() => {
 const dbIntroduce = computed(() => introEntry.value?.introduce || world.value.introduce || '')
 const dbImageUrl = computed(() => introEntry.value?.image_url || world.value.image_url || '')
 
-function worldIndex(id) {
-  const list = worlds.value.map((w) => w.id)
-  const i = list.indexOf(id)
-  const cur = list.indexOf(store.currentWorldId)
-  if (i < 0) return 0
-  if (id === store.currentWorldId) return 0
-  let idx = i - (cur < 0 ? 0 : cur)
-  if (idx <= 0) idx += list.length
-  return idx
+const slots = ref([])
+
+function slotOf(id) {
+  return slots.value.find((s) => s.id === id) || { id, index: 0, outter: id !== store.currentWorldId }
+}
+
+function initSlots() {
+  const cur = store.currentWorldId
+  let m = 0
+  slots.value = worlds.value.map((w) => {
+    if (w.id === cur) return { id: w.id, index: 0, outter: false }
+    return { id: w.id, index: m++, outter: true }
+  })
 }
 
 function ensureId() {
@@ -272,6 +272,7 @@ function show() {
   if (animater && animater.isActive()) return
   animating.value = true
   store.systemOpen = true
+  initSlots()
   ensureId()
   resetCompass()
   resetDatabox()
@@ -316,16 +317,35 @@ function hide() {
 function selectWorld(id) {
   if (!id || !store.worlds[id] || id === store.currentWorldId) return
   if (animater && animater.isActive()) return
+  const cur = slots.value.find((s) => !s.outter) || slots.value.find((s) => s.id === store.currentWorldId)
+  const next = slots.value.find((s) => s.id === id)
+  if (!cur || !next) return
+  const ci = cur.index
+  const ni = next.index
+  slots.value = slots.value.map((s) => {
+    if (s.id === cur.id) return { ...s, index: ni, outter: true }
+    if (s.id === next.id) return { ...s, index: ci, outter: false }
+    return s
+  })
   setTheme(id)
-  node.value = nodes.value[0]?.key || 'records'
-  currentId.value = null
-  ensureId()
-  angleRotate.value = 0
-  hiddenContent(() => showContent())
+  hiddenContent()
   animater = gsap.timeline()
     .to([nodeEl.value, idEl.value], { opacity: 0, duration: 0.6, ease: ease_out })
     .set([nodeEl.value, idEl.value], { rotate: 0 }, '<0.4')
-    .to([nodeEl.value, idEl.value], { opacity: 1, duration: 1, ease: ease_out }, '<0.4')
+    .to([nodeEl.value, idEl.value], {
+      opacity: 1,
+      duration: 1,
+      ease: ease_out,
+      onStart: () => {
+        const map = store.worlds[id]?.map || {}
+        const keys = Object.keys(map)
+        node.value = keys[0] || 'records'
+        const first = map[node.value]
+        const vals = first ? Object.values(first) : []
+        currentId.value = vals[0]?.id || null
+        showContent()
+      },
+    }, '<0.4')
 }
 
 function selectNode(key, index) {
@@ -417,24 +437,36 @@ function resizeWorlds() {
 }
 
 function loadLottie() {
+  if (!store.ready) return
   lottieAnims.forEach((a) => { try { a.destroy() } catch {} })
   lottieAnims = []
   nextTick(() => {
     document.querySelectorAll('.spw_lottie').forEach((el) => {
       const id = el.getAttribute('data-world')
-      const data = store.worlds[id]?.compass
-      if (!data) return
-      try {
-        const anim = lottie.loadAnimation({
-          container: el,
-          renderer: 'svg',
-          loop: true,
-          autoplay: true,
-          animationData: typeof data === 'string' ? JSON.parse(data) : data,
-        })
-        lottieAnims.push(anim)
-      } catch (err) {
-        console.warn('lottie miss', id, err)
+      const w = store.worlds[id]
+      const data = w?.compass
+      el.innerHTML = ''
+      if (data) {
+        try {
+          const anim = lottie.loadAnimation({
+            container: el,
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            animationData: typeof data === 'string' ? JSON.parse(data) : data,
+          })
+          lottieAnims.push(anim)
+          return
+        } catch (err) {
+          console.warn('lottie miss', id, err)
+        }
+      }
+      if (w?.star_image_url) {
+        const img = document.createElement('img')
+        img.src = cdn(w.star_image_url)
+        img.alt = w.name || id
+        img.decoding = 'async'
+        el.appendChild(img)
       }
     })
   })
@@ -442,6 +474,7 @@ function loadLottie() {
 
 watch(() => store.systemOpen, (v) => {
   if (v) {
+    initSlots()
     ensureId()
     nextTick(() => {
       resizeWorlds()
@@ -460,6 +493,7 @@ onMounted(() => {
     innerLenis.on('scroll', () => { scrollP.value = innerLenis.progress })
   }
   window.addEventListener('resize', resizeWorlds)
+  initSlots()
   loadLottie()
   ensureId()
 })
