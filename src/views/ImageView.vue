@@ -4,14 +4,24 @@
     <div class="viewfinder">
       <i class="vf vf_tl"></i><i class="vf vf_tr"></i><i class="vf vf_bl"></i><i class="vf vf_br"></i>
     </div>
-    <div class="img_hint img_hint_l _font_2">◀</div>
-    <div class="img_hint img_hint_r _font_2">▶</div>
+    <div
+      class="img_hint img_hint_l _font_2"
+      @pointerdown.stop="hintDown(1)"
+      @pointerup="hintUp"
+      @pointerleave="hintUp"
+      @pointercancel="hintUp"
+    >◀</div>
+    <div
+      class="img_hint img_hint_r _font_2"
+      @pointerdown.stop="hintDown(-1)"
+      @pointerup="hintUp"
+      @pointerleave="hintUp"
+      @pointercancel="hintUp"
+    >▶</div>
     <div
       class="scrollbox"
       :class="{ dragging: moving, scrollbox_actived: moving }"
       @pointerdown="onDown"
-      @pointermove="onMove"
-      @pointerup="onUp"
       @wheel.prevent="onWheel"
     >
       <div
@@ -68,10 +78,13 @@ let start = { x: 0, y: 0 }
 let ease = { x: 0, y: 0 }
 let raf = 0
 let dragTipTimer = null
+let hintTimer = null
 let if_movable = false
 let viewAnim = null
+let dragBound = false
 
 const COLS = 6
+const HINT = 18
 const scale_nums = () => innerHeight / 300 + innerWidth / 300
 const CW = () => 12 * 2.4 * scale_nums()
 const CH = () => 18 * 2.4 * scale_nums()
@@ -146,12 +159,35 @@ function hideTipSoon() {
   dragTipTimer = setTimeout(() => { dragged.value = true }, 500)
 }
 
+function overlaysShut() {
+  return !store.menuOpen && !store.systemOpen && !store.consoleOpen && !store.imageview.open
+}
+
+function nudge(dx, dy) {
+  if (picked.value) return
+  const s = scale_nums()
+  if (dx) ease.x += dx * 0.02 * s
+  if (dy) ease.y += dy * 0.02 * s
+  kickEase()
+  hideTipSoon()
+}
+
+function bindDragWindow(on) {
+  if (on === dragBound) return
+  dragBound = on
+  const fn = on ? window.addEventListener : window.removeEventListener
+  fn('pointermove', onMove)
+  fn('pointerup', onUp)
+  fn('pointercancel', onUp)
+}
+
 function onDown(e) {
   if (picked.value) return
   if_movable = true
   moving.value = true
   last = { x: e.clientX, y: e.clientY }
   start = { x: e.clientX, y: e.clientY }
+  bindDragWindow(true)
 }
 
 function onMove(e) {
@@ -169,14 +205,36 @@ function onMove(e) {
 function onUp() {
   if_movable = false
   moving.value = false
+  bindDragWindow(false)
 }
 
 function onWheel(e) {
   if (picked.value) return
-  const dy = 10 * Math.sign(e.wheelDeltaY || -e.deltaY || 0)
-  ease.y += dy * 0.02 * scale_nums()
+  const s = 0.02 * scale_nums()
+  const rawY = e.wheelDeltaY || -e.deltaY || 0
+  const rawX = e.wheelDeltaX || -e.deltaX || 0
+  if (e.shiftKey) {
+    const ax = 10 * Math.sign(rawX || rawY)
+    ease.x += ax * s
+  }
+  const ay = 10 * Math.sign(rawY)
+  ease.y += ay * s
   kickEase()
   hideTipSoon()
+}
+
+function hintDown(dir) {
+  if (picked.value) return
+  nudge(dir * HINT, 0)
+  hintUp()
+  hintTimer = setInterval(() => nudge(dir * HINT, 0), 40)
+}
+
+function hintUp() {
+  if (hintTimer) {
+    clearInterval(hintTimer)
+    hintTimer = null
+  }
 }
 
 function open(cell) {
@@ -186,7 +244,7 @@ function open(cell) {
   nextTick(() => {
     if (!viewbox.value) return
     gsap.set(viewbox.value, { opacity: 0 })
-    viewAnim = gsap.to(viewbox.value, { opacity: 1, duration: 1.3, ease: ease_out })
+    viewAnim = gsap.to(viewbox.value, { opacity: 1, duration: 0.45, ease: ease_out })
   })
 }
 
@@ -195,7 +253,7 @@ function hideView() {
   if (!viewbox.value) { picked.value = null; return }
   viewAnim = gsap.to(viewbox.value, {
     opacity: 0,
-    duration: 0.8,
+    duration: 0.35,
     ease: ease_out,
     onComplete: () => { picked.value = null },
   })
@@ -212,11 +270,24 @@ async function load() {
 }
 
 function onKey(e) {
-  if (e.key !== 'Escape') return
-  if (store.menuOpen || store.systemOpen || store.consoleOpen || store.imageview.open) return
-  if (!picked.value) return
+  if (!overlaysShut()) return
+  if (e.key === 'Escape') {
+    if (!picked.value) return
+    e.preventDefault()
+    hideView()
+    return
+  }
+  if (picked.value) return
+  const map = {
+    ArrowLeft: [HINT, 0],
+    ArrowRight: [-HINT, 0],
+    ArrowUp: [0, HINT],
+    ArrowDown: [0, -HINT],
+  }
+  const d = map[e.key]
+  if (!d) return
   e.preventDefault()
-  hideView()
+  nudge(d[0], d[1])
 }
 
 watch(() => route.fullPath, load, { immediate: true })
@@ -225,15 +296,13 @@ onMounted(() => {
   pan.y = -40
   window.addEventListener('resize', layout)
   window.addEventListener('keydown', onKey)
-  window.addEventListener('pointerup', onUp)
-  window.addEventListener('pointercancel', onUp)
 })
 onUnmounted(() => {
   if (raf) cancelAnimationFrame(raf)
+  bindDragWindow(false)
+  hintUp()
   window.removeEventListener('resize', layout)
   window.removeEventListener('keydown', onKey)
-  window.removeEventListener('pointerup', onUp)
-  window.removeEventListener('pointercancel', onUp)
   if (dragTipTimer) clearTimeout(dragTipTimer)
   if (viewAnim) viewAnim.kill()
 })

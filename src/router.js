@@ -46,6 +46,17 @@ router.beforeEach((to, from, next) => {
     next()
     return
   }
+  const inWorld = (n) => n === 'world' || n === 'record' || n === 'portrait' || n === 'image'
+  const sameWorldHop =
+    from.params.world &&
+    to.params.world &&
+    from.params.world === to.params.world &&
+    inWorld(from.name) &&
+    inWorld(to.name)
+  if (sameWorldHop) {
+    next()
+    return
+  }
   show_loading(next)
 })
 

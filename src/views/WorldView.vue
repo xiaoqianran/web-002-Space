@@ -2,7 +2,8 @@
   <div class="worldpage">
     <HoverGrid />
     <div class="background">
-      <img ref="bgImg" :src="bgSrc" alt="background" decoding="async" fetchpriority="high" />
+      <img ref="bgA" alt="background" decoding="async" fetchpriority="high" />
+      <img ref="bgB" alt="background" decoding="async" />
     </div>
     <div class="container">
       <div class="scrollline" :style="{ '--p': scrollP }">
@@ -65,7 +66,6 @@ import { preload, cdn } from '../assets.js'
 import {
   gsap,
   ease_out,
-  ease_in,
   ScrollTrigger,
   scroll_controler,
   scroll_progress,
@@ -77,18 +77,17 @@ const router = useRouter()
 const outline = ref([])
 const dropSeeds = ref([])
 const currentIndex = ref(0)
-const bgImg = ref(null)
+const bgA = ref(null)
+const bgB = ref(null)
+let frontIsA = true
 let sectionTriggers = []
 let warpTriggers = []
 let bgAnim = null
+let bgGen = 0
 let onScroll = null
 
 const world = computed(() => store.worlds[route.params.world] || store.worlds['cosmic-broth'])
 const scrollP = computed(() => scroll_progress.value ?? scroll_controler?.progress ?? 0)
-const bgSrc = computed(() => {
-  const item = outline.value[currentIndex.value]
-  return cdn(item?.image || world.value?.image_url || '')
-})
 
 const exploreTo = computed(() => {
   const id = world.value?.id
@@ -116,22 +115,62 @@ function seedDrops(n) {
   ])
 }
 
+function srcAt(index) {
+  const item = outline.value[index]
+  return cdn(item?.image || world.value?.image_url || '')
+}
+
+function layers() {
+  return frontIsA
+    ? { front: bgA.value, back: bgB.value }
+    : { front: bgB.value, back: bgA.value }
+}
+
+function preloadNeighbor(index) {
+  const next = outline.value[index + 1] || outline.value[index - 1]
+  if (next?.image) preload([next.image])
+}
+
 function changeBackground(index) {
   if (index === currentIndex.value) return
-  const el = bgImg.value || document.querySelector('.worldpage .background img')
-  if (!el) {
-    currentIndex.value = index
-    return
+  currentIndex.value = index
+  const src = srcAt(index)
+  const { front, back } = layers()
+  if (!back || !front) return
+  if (bgAnim) {
+    bgAnim.kill()
+    bgAnim = null
   }
-  if (bgAnim) bgAnim.kill()
-  bgAnim = gsap.timeline()
-    .to(el, { opacity: 0, duration: 0.3, ease: ease_in })
-    .to(el, {
-      opacity: 1,
-      duration: 0.8,
-      ease: ease_out,
-      onStart: () => { currentIndex.value = index },
-    }, '<0.4')
+  const gen = ++bgGen
+  back.src = src
+  const startFade = () => {
+    if (gen !== bgGen) return
+    if (bgAnim) bgAnim.kill()
+    bgAnim = gsap.timeline({
+      onComplete: () => {
+        frontIsA = !frontIsA
+        bgAnim = null
+      },
+    })
+      .to(back, { opacity: 1, duration: 0.8, ease: ease_out }, 0)
+      .to(front, { opacity: 0, duration: 0.8, ease: ease_out }, 0)
+  }
+  if (back.complete && back.naturalWidth) startFade()
+  else {
+    const done = () => {
+      back.removeEventListener('load', done)
+      back.removeEventListener('error', done)
+      startFade()
+    }
+    back.addEventListener('load', done)
+    back.addEventListener('error', done)
+  }
+  preloadNeighbor(index)
+}
+
+function revealSection(el) {
+  gsap.killTweensOf(el)
+  gsap.to(el, { opacity: 1, y: 0, duration: 0.7, ease: ease_out })
 }
 
 function removeTriggers() {
@@ -143,6 +182,7 @@ function removeTriggers() {
     bgAnim.kill()
     bgAnim = null
   }
+  bgGen += 1
   if (onScroll) {
     window.removeEventListener('scroll', onScroll)
     onScroll = null
@@ -158,9 +198,8 @@ function initTriggers() {
     const st = ScrollTrigger.create({
       trigger: el,
       start: 'top 100%',
-      onEnter: () => {
-        gsap.to(el, { opacity: 1, y: 0, duration: 1.5, ease: ease_out })
-      },
+      onEnter: () => revealSection(el),
+      onEnterBack: () => revealSection(el),
     })
     sectionTriggers.push(st)
   })
@@ -194,6 +233,22 @@ function initTriggers() {
   window.addEventListener('scroll', onScroll)
   ScrollTrigger.refresh()
   scroll_controler?.resize?.()
+  sectionTriggers.forEach((st) => {
+    if (st.scroll() >= st.start) revealSection(st.trigger)
+  })
+}
+
+function resetLayers() {
+  frontIsA = true
+  const src = srcAt(0)
+  if (bgA.value) {
+    if (src) bgA.value.src = src
+    gsap.set(bgA.value, { opacity: 1 })
+  }
+  if (bgB.value) {
+    bgB.value.removeAttribute('src')
+    gsap.set(bgB.value, { opacity: 0 })
+  }
 }
 
 async function load() {
@@ -224,6 +279,8 @@ async function load() {
   window.scrollTo(0, 0)
   scroll_controler?.scrollTo?.(0, { immediate: true })
   await nextTick()
+  resetLayers()
+  preloadNeighbor(0)
   initTriggers()
 }
 
