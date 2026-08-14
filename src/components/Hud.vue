@@ -1,7 +1,7 @@
 <template>
   <div class="uibox">
     <div class="uibox_shipbox uibox_edge">
-      <div class="uibox_shipbox_info">
+      <div class="uibox_shipbox_info" @click="store.instructionOpen = true">
         <div class="uibox_shipbox_info_ship">
           <Ship />
         </div>
@@ -49,7 +49,7 @@
           <circle cx="160" cy="50" r="2" style="--d:1" />
           <circle cx="70" cy="150" r="2" style="--d:2" />
         </svg>
-        <div class="umc_button" @click="store.consoleOpen = !store.consoleOpen">
+        <div class="umc_button" @click="openConsole">
           <div class="umc_button_background"></div>
           <div class="umc_button_layer umc_button_layer1"><div style="--a:20deg;--d:1"></div></div>
           <div class="umc_button_layer umc_button_layer2"><div style="--a:-30deg;--d:-1"></div></div>
@@ -120,7 +120,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { store, currentWorld, worldYearDate } from '../store.js'
+import { store, currentWorld, worldYearDate, openSystem } from '../store.js'
 import Ship from './Ship.vue'
 
 const NOVEL = 'https://changdunovel.com/wap/share-v2.html?&book_id=7522080164855942206&share_code=xqpvRmoYGDWFCVOrdvXQC__rR3BMUmS67C6Ik5kwfL8%3D'
@@ -138,6 +138,10 @@ function tick() {
   const d = new Date()
   const pad = (n) => String(n).padStart(2, '0')
   clock.value = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+function openConsole() {
+  store.consoleOpen = false
+  openSystem()
 }
 onMounted(() => { tick(); timer = setInterval(tick, 1000) })
 onUnmounted(() => clearInterval(timer))

@@ -1,5 +1,6 @@
 import { reactive } from 'vue'
 import { api } from './api.js'
+import { gsap, ease_out } from './motion.js'
 
 export const WORLDS_FALLBACK = {
   'cosmic-broth': {
@@ -89,10 +90,62 @@ export const store = reactive({
   adOpen: false,
   hasDragged: false,
   menuOpen: false,
-  hexWiping: false,
-  hexWipeKey: 0,
   imageview: { open: false, src: '' },
+  shipErrorType: null,
+  ease_in: 'ease_in',
+  ease_out: 'ease_out',
+  ease_inout: 'ease_inout',
+  scroll_progress: 0,
 })
+
+let _loading = null
+let _pendingShow = []
+let _ship = { play() {}, pause() {} }
+let _checkTimer = null
+
+export function registerLoading(api) {
+  _loading = api
+  if (!api) return
+  const queued = _pendingShow.splice(0)
+  queued.forEach((fn) => fn())
+}
+
+export function registerShip(api) {
+  if (api) _ship = api
+}
+
+export function playShip() {
+  _ship.play && _ship.play()
+}
+
+export function pauseShip() {
+  _ship.pause && _ship.pause()
+}
+
+export function show_loading(next) {
+  const run = () => {
+    if (_loading && _loading.show) _loading.show(next)
+    else if (typeof next === 'function') next()
+  }
+  if (_loading) run()
+  else _pendingShow.push(run)
+}
+
+export function hidden_loading() {
+  if (_loading && _loading.hidden) _loading.hidden()
+}
+
+export function check_loading() {
+  if (_checkTimer) clearInterval(_checkTimer)
+  _checkTimer = setInterval(() => {
+    if (document.readyState === 'complete') {
+      clearInterval(_checkTimer)
+      _checkTimer = null
+      window.scrollTo(0, 0)
+      hidden_loading()
+    }
+  }, 300)
+}
 
 export function worldList() {
   return Object.values(store.worlds)
@@ -103,10 +156,15 @@ export function currentWorld() {
 }
 
 export function setTheme(worldId) {
-  if (store.worlds[worldId]) {
-    store.currentWorldId = worldId
-    document.documentElement.style.setProperty('--color_theme', store.worlds[worldId].color)
+  if (!store.worlds[worldId]) return
+  store.currentWorldId = worldId
+  const color = store.worlds[worldId].color
+  try {
+    gsap.to('body', { '--color_theme': color, duration: 0.5, ease: ease_out })
+  } catch {
+    document.documentElement.style.setProperty('--color_theme', color)
   }
+  document.documentElement.style.setProperty('--color_theme', color)
 }
 
 export function openSystem(worldId) {
@@ -132,12 +190,6 @@ export function toggleMenu(v) {
   store.menuOpen = typeof v === 'boolean' ? v : !store.menuOpen
 }
 
-export function triggerHexWipe() {
-  store.hexWipeKey += 1
-  store.hexWiping = true
-  setTimeout(() => { store.hexWiping = false }, 1400)
-}
-
 export function worldYearDate(world) {
   const d = new Date()
   const diff = parseInt(world?.time_diff || '0', 10) || 0
@@ -155,7 +207,7 @@ export async function boot() {
   ])
   if (worlds && typeof worlds === 'object') {
     for (const [id, w] of Object.entries(worlds)) {
-      store.worlds[id] = { ...store.worlds[id], ...w, compass: undefined }
+      store.worlds[id] = { ...store.worlds[id], ...w }
     }
   }
   if (introduces) store.introduces = introduces

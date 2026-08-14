@@ -1,34 +1,15 @@
 <template>
   <div class="home">
-    <Loading />
     <WindowView />
     <Hud />
     <SystemOverlay />
     <Instruction />
 
-    <div class="console-panel" :class="{ open: store.consoleOpen }">
-      <div class="console-panel_title">
-        <p class="_font_2">COSMIC BROTH / 宇宙汤</p>
-        <span class="_font_1" style="cursor:pointer;color:#000" @click="store.consoleOpen=false">X</span>
-      </div>
-      <div class="console-panel_body">
-        <p class="_font_1">小说「万能翻译器」</p>
-        <p class="_font_1">视觉「真实伪色」</p>
-        <p class="_font_1">飞船系统 Ray · GRAND-STARRS-RAY</p>
-        <p class="_font_1">
-          <a href="https://weibo.com/u/5652161753" target="_blank">weibo</a>
-          ·
-          <a href="https://b23.tv/0kFykcQ" target="_blank">bilibili</a>
-        </p>
-        <div class="console-panel_act _font_1" @click="runAuth">执行已授权操作</div>
-      </div>
-    </div>
-
     <div class="ed" :class="{ show: store.emergencyOpen }" v-show="store.emergencyOpen">
       <div class="ed_title"><p class="_font_2">EMERGENCY</p></div>
       <div class="ed_content">
         <div class="ed_content_shipbox">
-          <div class="ed_content_shipbox_ship"><Ship stroke /></div>
+          <div class="ed_content_shipbox_ship"><Ship stroke :error_type="store.shipErrorType" /></div>
         </div>
         <div class="ed_content_info">
           <p class="ed_content_info_title _font_2">飞船实时状态监测反馈</p>
@@ -59,7 +40,6 @@ AUTH: GRANTED</div>
 <script setup>
 import { computed, onMounted } from 'vue'
 import { store, closeSystem, ADS } from '../store.js'
-import Loading from '../components/Loading.vue'
 import WindowView from '../components/WindowView.vue'
 import Hud from '../components/Hud.vue'
 import SystemOverlay from '../components/SystemOverlay.vue'
@@ -72,9 +52,4 @@ onMounted(() => {
   closeSystem()
   setTimeout(() => { store.adOpen = true }, 12000)
 })
-
-function runAuth() {
-  store.consoleOpen = false
-  store.emergencyOpen = true
-}
 </script>

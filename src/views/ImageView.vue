@@ -8,7 +8,7 @@
     <div class="img_hint img_hint_r _font_2">▶</div>
     <div
       class="scrollbox"
-      :class="{ dragging: moving }"
+      :class="{ dragging: moving, scrollbox_actived: moving }"
       @pointerdown="onDown"
       @pointermove="onMove"
       @pointerup="onUp"
@@ -18,7 +18,7 @@
       <div
         v-for="(cell, i) in cells"
         :key="i"
-        class="imove imove_cut"
+        class="imove imove_cut scrollbox_mover"
         :style="cellStyle(cell)"
         @click="open(cell)"
       >
@@ -26,7 +26,7 @@
         <p class="imove_tip _font_1">{{ cell.n }}</p>
       </div>
     </div>
-    <div class="dragtip" :class="{ hidden: dragged }">
+    <div class="dragtip" :class="{ hidden: dragged, dragtip_hidden: dragged }">
       <div class="dragtip_main_content _clip_edge">
         <p class="_font_3">DRAG SCREEN</p>
         <p class="_font_1">TO BROWSE IMAGES</p>
@@ -38,19 +38,20 @@
         <span v-for="n in 22" :key="n" :style="{ width: ((n * 5) % 4 + 1) + 'px' }"></span>
       </div>
     </div>
-    <div v-if="picked" class="iview" @click.self="picked=null">
-      <img class="hero" :src="picked.image_url" alt="view" @click="showImageview(picked.image_url)" />
-      <p class="iview_txt _font_1">{{ picked.instrution }}</p>
-      <div class="page-return page-return_bottom" @click="picked=null"><ReturnButton /></div>
+    <div v-show="picked" class="iview" ref="viewbox" @click.self="hideView">
+      <img class="hero viewbox_imagebox_image" :src="picked?.image_url" alt="view" @click="showImageview(picked.image_url)" />
+      <p class="iview_txt _font_1">{{ picked?.instrution }}</p>
+      <div class="page-return page-return_bottom" @click="hideView"><ReturnButton /></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
 import { setTheme, showImageview } from '../store.js'
+import { gsap, ease_out } from '../motion.js'
 import ReturnButton from '../components/ReturnButton.vue'
 
 const route = useRoute()
@@ -61,23 +62,30 @@ const moving = ref(false)
 const dragged = ref(false)
 const picked = ref(null)
 const cells = ref([])
+const viewbox = ref(null)
 let last = { x: 0, y: 0 }
 let start = { x: 0, y: 0 }
+let ease = { x: 0, y: 0 }
+let raf = 0
+let dragTipTimer = null
+let if_movable = false
 
 const COLS = 6
-const CW = 240
-const CH = 320
+const scale_nums = () => innerHeight / 300 + innerWidth / 300
+const CW = () => 12 * 2.4 * scale_nums()
+const CH = () => 18 * 2.4 * scale_nums()
 const GAP = 40
-let PERIOD_X = COLS * (CW + GAP)
-let PERIOD_Y = 4 * (CH + GAP * 0.6)
+let PERIOD_X = COLS * (CW() + GAP)
+let PERIOD_Y = 4 * (CH() + GAP * 0.6)
 
 function layout() {
   const list = items.value
   if (!list.length) { cells.value = []; return }
   const out = []
+  const cw = CW(), ch = CH()
   const rows = Math.max(1, Math.ceil(list.length / COLS))
-  PERIOD_X = COLS * (CW + GAP)
-  PERIOD_Y = rows * (CH + GAP * 0.6)
+  PERIOD_X = COLS * (cw + GAP)
+  PERIOD_Y = rows * (ch + GAP * 0.6)
   const copies = 4
   for (let cpy = 0; cpy < copies; cpy++) {
     const ox = (cpy % 2) * PERIOD_X
@@ -89,8 +97,10 @@ function layout() {
       out.push({
         item,
         n: i + 1,
-        x: ox + col * (CW + GAP) + (row % 2 ? GAP : 0),
-        y: oy + row * (CH + GAP * 0.6),
+        x: ox + col * (cw + GAP) + (row % 2 ? GAP : 0),
+        y: oy + row * (ch + GAP * 0.6),
+        w: cw,
+        h: ch,
       })
     }
   }
@@ -106,37 +116,88 @@ function wrapPan() {
 
 function cellStyle(c) {
   return {
-    width: CW + 'px',
-    height: CH + 'px',
+    width: (c.w || CW()) + 'px',
+    height: (c.h || CH()) + 'px',
     transform: `translate(${c.x + pan.x}px, ${c.y + pan.y}px)`,
   }
 }
 
+function applyEase() {
+  pan.x += ease.x
+  pan.y += ease.y
+  wrapPan()
+  ease.x *= 0.95
+  ease.y *= 0.95
+  if (Math.abs(ease.x) < 0.01 && Math.abs(ease.y) < 0.01) {
+    ease.x = ease.y = 0
+    raf = 0
+    return
+  }
+  raf = requestAnimationFrame(applyEase)
+}
+
+function kickEase() {
+  if (!raf) raf = requestAnimationFrame(applyEase)
+}
+
+function hideTipSoon() {
+  if (dragTipTimer) return
+  dragTipTimer = setTimeout(() => { dragged.value = true }, 500)
+}
+
 function onDown(e) {
+  if (picked.value) return
+  if_movable = true
   moving.value = true
   last = { x: e.clientX, y: e.clientY }
   start = { x: e.clientX, y: e.clientY }
 }
+
 function onMove(e) {
-  if (!moving.value) return
-  pan.x += e.clientX - last.x
-  pan.y += e.clientY - last.y
+  if (!if_movable) return
+  const dx = e.movementX ?? (e.clientX - last.x)
+  const dy = e.movementY ?? (e.clientY - last.y)
+  const s = scale_nums()
+  ease.x += dx * 0.02 * s
+  ease.y += dy * 0.02 * s
   last = { x: e.clientX, y: e.clientY }
-  wrapPan()
-  dragged.value = true
+  kickEase()
+  hideTipSoon()
 }
+
 function onUp() {
+  if_movable = false
   moving.value = false
 }
+
 function onWheel(e) {
-  pan.y += e.deltaY < 0 ? 40 : -40
-  wrapPan()
-  dragged.value = true
+  if (picked.value) return
+  const dy = 10 * Math.sign(e.wheelDeltaY || -e.deltaY || 0)
+  ease.y += dy * 0.02 * scale_nums()
+  kickEase()
+  hideTipSoon()
 }
+
 function open(cell) {
   if (Math.hypot(last.x - start.x, last.y - start.y) > 6) return
   picked.value = cell.item
+  nextTick(() => {
+    if (!viewbox.value) return
+    gsap.set(viewbox.value, { opacity: 0 })
+    gsap.to(viewbox.value, { opacity: 1, duration: 1.3, ease: ease_out })
+  })
 }
+
+function hideView() {
+  if (!viewbox.value) { picked.value = null; return }
+  gsap.to(viewbox.value, {
+    opacity: 0,
+    duration: 0.8,
+    ease: ease_out,
+    onComplete: () => { picked.value = null },
+  })
+}
+
 function back() { router.push(`/${route.params.world}`) }
 
 async function load() {
@@ -147,5 +208,14 @@ async function load() {
 }
 
 watch(() => route.fullPath, load, { immediate: true })
-onMounted(() => { pan.x = -80; pan.y = -40 })
+onMounted(() => {
+  pan.x = -80
+  pan.y = -40
+  window.addEventListener('resize', layout)
+})
+onUnmounted(() => {
+  if (raf) cancelAnimationFrame(raf)
+  window.removeEventListener('resize', layout)
+  if (dragTipTimer) clearTimeout(dragTipTimer)
+})
 </script>

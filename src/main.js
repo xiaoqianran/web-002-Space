@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router.js'
 import './styles/global.css'
+import 'lenis/dist/lenis.css'
 
 const BASE = import.meta.env.BASE_URL
 const font = document.createElement('style')

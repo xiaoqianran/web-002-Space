@@ -5,7 +5,7 @@ import RecordView from './views/RecordView.vue'
 import PortraitView from './views/PortraitView.vue'
 import ImageView from './views/ImageView.vue'
 import NotFound from './views/NotFound.vue'
-import { store, setTheme, triggerHexWipe, WORLDS_FALLBACK } from './store.js'
+import { store, setTheme, show_loading, WORLDS_FALLBACK } from './store.js'
 
 const KNOWN = () => ({ ...WORLDS_FALLBACK, ...store.worlds })
 
@@ -25,24 +25,18 @@ const router = createRouter({
   },
 })
 
-router.beforeEach((to) => {
+router.beforeEach((to, from, next) => {
   const w = to.params.world
-  if (!w) return true
-  const worlds = KNOWN()
-  if (worlds[w]) {
-    setTheme(w)
-    return true
+  if (w) {
+    const worlds = KNOWN()
+    if (worlds[w]) {
+      setTheme(w)
+    } else if (to.name === 'world' || to.name === 'record' || to.name === 'portrait' || to.name === 'image') {
+      next({ name: 'notfound' })
+      return
+    }
   }
-  if (to.name === 'world' || to.name === 'record' || to.name === 'portrait' || to.name === 'image') {
-    return { name: 'notfound' }
-  }
-  return true
-})
-
-router.afterEach((to, from) => {
-  if (from.name && to.fullPath !== from.fullPath) {
-    triggerHexWipe()
-  }
+  show_loading(next)
 })
 
 export default router
