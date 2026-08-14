@@ -2,6 +2,7 @@
   <Loading />
   <SiteHeader />
   <MenuOverlay />
+  <PageScrollbar v-if="isInner" />
   <router-view />
   <div
     class="imageview"
@@ -25,16 +26,20 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { store, hideImageview, boot } from './store.js'
 import { gsap, ease_out, initGlobalLenis, scroll_controler } from './motion.js'
 import ReturnButton from './components/ReturnButton.vue'
 import SiteHeader from './components/SiteHeader.vue'
 import MenuOverlay from './components/MenuOverlay.vue'
 import Loading from './components/Loading.vue'
+import PageScrollbar from './components/PageScrollbar.vue'
 
 boot()
 
+const route = useRoute()
+const isInner = computed(() => route.name !== 'home')
 const imgBox = ref(null)
 const ix = ref(0)
 const iy = ref(0)
@@ -43,9 +48,31 @@ let dragging = false
 let lx = 0
 let ly = 0
 
+function applyPageScroll() {
+  const inner = route.name !== 'home'
+  document.documentElement.classList.toggle('page-scroll', inner)
+  if (inner && scroll_controler) {
+    scroll_controler.resize()
+    scroll_controler.scrollTo(0, { immediate: true })
+  }
+}
+
 onMounted(() => {
   initGlobalLenis()
+  applyPageScroll()
   gsap.set('.imageview', { opacity: 0 })
+})
+
+watch(() => route.fullPath, applyPageScroll)
+
+watch(() => store.menuOpen, (v) => {
+  if (!scroll_controler) return
+  if (v) {
+    scroll_controler.stop()
+  } else {
+    scroll_controler.start()
+    scroll_controler.resize()
+  }
 })
 
 watch(() => store.imageview.open, (v) => {

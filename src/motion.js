@@ -1,6 +1,7 @@
 import gsap from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
+import { ref } from 'vue'
 
 gsap.registerPlugin(CustomEase)
 
@@ -21,14 +22,23 @@ export function createLenis(opts = {}) {
   return new Lenis({ ...LENIS_BASE, ...opts })
 }
 
+export function bindLenis(el, opts = {}) {
+  if (!el) return null
+  return createLenis({ wrapper: el, ...opts })
+}
+
+export function resizeLenis() {
+  scroll_controler?.resize?.()
+}
+
 export let scroll_controler = null
-export let scroll_progress = 0
+export const scroll_progress = ref(0)
 
 export function initGlobalLenis() {
   if (scroll_controler) return scroll_controler
   scroll_controler = createLenis()
   scroll_controler.on('scroll', () => {
-    scroll_progress = scroll_controler.progress
+    scroll_progress.value = scroll_controler.progress ?? 0
   })
   return scroll_controler
 }

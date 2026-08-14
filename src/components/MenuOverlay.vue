@@ -1,5 +1,5 @@
 <template>
-  <div v-if="store.menuOpen" class="menubox" @keydown.esc.prevent="close">
+  <div v-show="store.menuOpen" class="menubox" @keydown.esc.prevent="close">
     <div class="menubox_mask"></div>
     <div class="menubox_container">
       <div class="menubox_egde menubox_egde_left">
@@ -35,36 +35,40 @@
 
       <div class="menubox_selecter">
         <p class="menubox_selecter_path _font_1">c:\cosmicbroth\database</p>
-        <div class="menubox_selecter_box">
+        <div class="menubox_selecter_box" ref="selecterBox">
           <div
             v-for="w in worlds"
             :key="w.id"
             class="msb_worlds"
             :class="{ msb_selection_selected_world: openWorld === w.id }"
             :style="{ '--color': w.color }"
+            :data-world="w.id"
           >
             <div class="msb_selection" @click="toggleWorld(w.id)">
               <svg viewBox="0 0 200 160"><path d="M100.1,23.4L76.68,1.71c0,0-49.55,0-76.68,0V158.3h200V23.4C166.7,23.4,100.1,23.4,100.1,23.4z M187.9,146.19H12.1V35.49h175.8V146.19z"/><rect x="12.1" y="35.49" width="175.8" height="110.7"/></svg>
               <p class="_font_3">{{ w.name }}</p>
               <div class="msb_selection_arrow _arrow_left"></div>
             </div>
-            <div class="msb_nodes_container" :class="{ open: openWorld === w.id }">
+            <div class="msb_nodes_container">
               <div
                 v-for="node in nodesOf(w)"
                 :key="node.key"
-                class="msb_nodes" :class="{ msb_selection_selected_node: openNode === w.id + '/' + node.key }"
+                class="msb_nodes"
+                :class="{ msb_selection_selected_node: openNode === w.id + '/' + node.key }"
                 :style="{ '--color': w.color }"
+                :data-node="w.id + '/' + node.key"
               >
                 <div class="msb_selection" @click="toggleNode(w.id, node.key)">
                   <svg viewBox="0 0 200 160"><path d="M100.1,23.4L76.68,1.71c0,0-49.55,0-76.68,0V158.3h200V23.4C166.7,23.4,100.1,23.4,100.1,23.4z M187.9,146.19H12.1V35.49h175.8V146.19z"/><rect x="12.1" y="35.49" width="175.8" height="110.7"/></svg>
                   <p class="_font_3">{{ node.label }}</p>
                   <div class="msb_selection_arrow _arrow_left"></div>
                 </div>
-                <div class="msb_ids_container" :class="{ open: openNode === w.id + '/' + node.key }">
+                <div class="msb_ids_container">
                   <div
                     v-for="item in node.items"
                     :key="item.id"
                     class="msb_ids"
+                    :class="{ msb_selection_selected_id: item.id === route.params.id }"
                     :style="{ '--color': w.color }"
                   >
                     <div class="msb_selection" @click="goItem(w, node.key, item)">
@@ -95,9 +99,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { store, worldList, currentWorld, toggleMenu, setTheme } from '../store.js'
+import { bindLenis, ease_out, gsap, resizeLenis, scroll_controler } from '../motion.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -106,9 +111,10 @@ const preview = computed(() => {
   const id = openWorld.value || store.currentWorldId
   return store.worlds[id] || currentWorld()
 })
-
+const selecterBox = ref(null)
 const openWorld = ref(store.currentWorldId)
 const openNode = ref('')
+let menuLenis = null
 
 const socials = [
   { k: 'BILI', icon: 'img/social/bilibili.svg', href: 'https://b23.tv/0kFykcQ' },
@@ -125,15 +131,66 @@ function nodesOf(w) {
     .map((k) => ({ key: k, label: NODE_LABEL[k], items: Object.values(m[k]) }))
 }
 
+function resizeMenuLenis() {
+  menuLenis?.resize?.()
+}
+
+function animateHeight(sel, collapse, instant) {
+  const els = typeof sel === 'string' ? document.querySelectorAll(sel) : sel
+  if (!els || (els.length !== undefined && !els.length)) {
+    resizeMenuLenis()
+    return
+  }
+  gsap.to(els, {
+    height: collapse ? 0 : 'auto',
+    duration: instant ? 0 : 0.5,
+    ease: ease_out,
+    onComplete: resizeMenuLenis,
+  })
+}
+
 function toggleWorld(id) {
-  openWorld.value = openWorld.value === id ? '' : id
+  if (openWorld.value === id) {
+    animateHeight('.msb_selection_selected_world .msb_nodes_container, .msb_selection_selected_node .msb_ids_container', true)
+    openWorld.value = ''
+    openNode.value = ''
+    return
+  }
+  animateHeight('.msb_selection_selected_world .msb_nodes_container, .msb_selection_selected_node .msb_ids_container', true)
+  openWorld.value = id
   setTheme(id)
   openNode.value = ''
+  nextTick(() => {
+    animateHeight('.msb_selection_selected_world .msb_nodes_container', false)
+  })
 }
 
 function toggleNode(wid, key) {
   const k = wid + '/' + key
-  openNode.value = openNode.value === k ? '' : k
+  if (openNode.value === k) {
+    animateHeight('.msb_selection_selected_node .msb_ids_container', true)
+    openNode.value = ''
+    return
+  }
+  if (openNode.value) animateHeight('.msb_selection_selected_node .msb_ids_container', true)
+  openNode.value = k
+  nextTick(() => {
+    animateHeight('.msb_selection_selected_node .msb_ids_container', false)
+  })
+}
+
+function destroyMenuLenis() {
+  if (menuLenis) {
+    menuLenis.destroy()
+    menuLenis = null
+  }
+}
+
+function bindMenuLenis() {
+  destroyMenuLenis()
+  const el = selecterBox.value || document.querySelector('.menubox_selecter_box')
+  if (!el) return
+  menuLenis = bindLenis(el)
 }
 
 function close() {
@@ -145,8 +202,6 @@ function explorePreview() {
   if (route.name === 'world' && route.params.world === id) {
     close()
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    const el = document.querySelector('.worldpage')
-    el?.scrollTo?.({ top: 0, behavior: 'smooth' })
     return
   }
   close()
@@ -157,8 +212,9 @@ function goItem(w, node, item) {
   close()
   setTheme(w.id)
   if (node === 'records') {
-    const chapters = store.routerMap?.[w.id]?.records?.[item.id] || ['c1']
-    router.push(`/${w.id}/records/${item.id}/${chapters[0]}`)
+    const chapters = store.routerMap?.[w.id]?.records?.[item.id]
+    const first = (Array.isArray(chapters) && chapters[0]) || 'c1'
+    router.push(`/${w.id}/records/${item.id}/${first}`)
   } else {
     router.push(`/${w.id}/${node}/${item.id}`)
   }
@@ -168,10 +224,42 @@ function onKey(e) {
   if (e.key === 'Escape') close()
 }
 
-watch(() => store.menuOpen, (v) => {
-  if (v) openWorld.value = store.currentWorldId
+function currentNodeKey() {
+  const name = route.name
+  if (name === 'record') return 'records'
+  if (name === 'portrait') return 'portraits'
+  if (name === 'image') return 'images'
+  return ''
+}
+
+watch(() => store.menuOpen, async (v) => {
+  if (v) {
+    scroll_controler?.stop()
+    const world = route.params.world || store.currentWorldId
+    openWorld.value = world
+    const node = currentNodeKey()
+    openNode.value = node ? `${world}/${node}` : ''
+    await nextTick()
+    const nodes = document.querySelector('.msb_selection_selected_world .msb_nodes_container')
+    const ids = document.querySelector('.msb_selection_selected_node .msb_ids_container')
+    if (nodes) gsap.to(nodes, { height: 'auto', duration: 0.5, ease: ease_out, onComplete: resizeMenuLenis })
+    if (ids) gsap.to(ids, { height: 'auto', duration: 0.5, ease: ease_out, onComplete: resizeMenuLenis })
+    bindMenuLenis()
+    menuLenis?.resize?.()
+    resizeLenis()
+  } else {
+    destroyMenuLenis()
+    document.querySelectorAll('.msb_nodes_container, .msb_ids_container').forEach((el) => {
+      gsap.set(el, { height: 0 })
+    })
+    scroll_controler?.start()
+    scroll_controler?.resize()
+  }
 })
 
 onMounted(() => window.addEventListener('keydown', onKey))
-onUnmounted(() => window.removeEventListener('keydown', onKey))
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKey)
+  destroyMenuLenis()
+})
 </script>
