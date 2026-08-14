@@ -61,7 +61,7 @@ function applyPageScroll() {
 
 function onKey(e) {
   if (e.key !== 'Escape') return
-  if (store.menuOpen || store.systemOpen || store.consoleOpen) return
+  if (store.menuOpen) return
   if (!store.imageview.open) return
   e.preventDefault()
   closeView()

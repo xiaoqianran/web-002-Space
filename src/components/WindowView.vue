@@ -161,6 +161,7 @@ let distance_x = 0
 let distance_y = 0
 let min_x = 0, max_x = 0, min_y = 0, max_y = 0
 let infoTl = gsap.timeline()
+let dragTl = null
 let particles = []
 let raf = 0
 let starResize = null
@@ -221,7 +222,8 @@ function move(x, y) {
   distance_y += (y - mouse_y) / window.innerWidth * 500 / dpr
   distance_x = Math.max(min_x, Math.min(max_x, distance_x))
   distance_y = Math.max(min_y, Math.min(max_y, distance_y))
-  gsap.timeline()
+  if (dragTl) dragTl.kill()
+  dragTl = gsap.timeline()
     .to(bgEl.value, { x: distance_x, y: distance_y, duration: 1, ease: ease_out })
     .to(starsEl.value, { x: distance_x * 0.8, y: distance_y * 0.8, duration: 1, ease: ease_out }, '<')
     .set([dragL0.value, dragL1.value, dragR0.value, dragR1.value].filter(Boolean), {
@@ -237,13 +239,16 @@ function hoverStar(id) {
 }
 
 function checkShow(id, el) {
-  if (infoTl.isActive() || currentStar.value === id) return
+  if (currentStar.value === id) return
+  if (infoTl && infoTl.isActive()) infoTl.kill()
+  infoTl = gsap.timeline()
   if (currentStar.value) infoTl.add(hideInfo())
   infoTl.add(showInfo(id, el))
 }
 
 function checkHidden() {
-  if (infoTl.isActive() || !currentStar.value) return
+  if (!currentStar.value) return
+  if (infoTl && infoTl.isActive()) infoTl.kill()
   infoTl = hideInfo(() => { currentStar.value = null })
 }
 

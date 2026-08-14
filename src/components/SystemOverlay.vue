@@ -250,10 +250,10 @@ function showDatabox() {
 function hiddenContent(cb) {
   if (contentAnim) contentAnim.kill()
   contentAnim = gsap.timeline()
-    .to(dbTitle.value, { y: '100%', duration: 0.8, ease: ease_out })
+    .to(dbTitle.value, { y: '100%', duration: 0.5, ease: ease_out })
     .to([dbImage.value, dbContent.value], {
       opacity: 0,
-      duration: 0.8,
+      duration: 0.5,
       ease: ease_inout,
       onComplete: () => cb && cb(),
     }, '<')
@@ -354,7 +354,8 @@ function selectWorld(id) {
 
 function selectNode(key, index) {
   if (node.value === key || (animater && animater.isActive())) return
-  if (swapAnim && swapAnim.isActive()) return
+  if (swapAnim && swapAnim.isActive()) swapAnim.kill()
+  if (contentAnim && contentAnim.isActive()) contentAnim.kill()
   hiddenContent()
   swapAnim = gsap.timeline()
     .to(nodeEl.value, { rotate: `${-index * ANGLE_NODE}deg`, duration: 1.5, ease: ease_out })
@@ -375,7 +376,8 @@ function selectNode(key, index) {
 
 function selectId(item, index) {
   if (currentId.value === item.id || (animater && animater.isActive())) return
-  if (swapAnim && swapAnim.isActive()) return
+  if (swapAnim && swapAnim.isActive()) swapAnim.kill()
+  if (contentAnim && contentAnim.isActive()) contentAnim.kill()
   hiddenContent(() => {
     currentId.value = item.id
     showContent()
@@ -385,6 +387,13 @@ function selectId(item, index) {
     duration: 1.5,
     ease: ease_out,
   })
+}
+
+function onKey(e) {
+  if (e.key !== 'Escape' || !store.systemOpen) return
+  if (store.menuOpen) return
+  e.preventDefault()
+  hide()
 }
 
 function jump() {
@@ -525,6 +534,7 @@ onMounted(() => {
     innerLenis.on('scroll', () => { scrollP.value = innerLenis.progress })
   }
   window.addEventListener('resize', resizeWorlds)
+  window.addEventListener('keydown', onKey)
   initSlots()
   loadLottie()
   ensureId()
@@ -532,6 +542,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', resizeWorlds)
+  window.removeEventListener('keydown', onKey)
   bindWorldsWindow(false)
   lottieAnims.forEach((a) => { try { a.destroy() } catch {} })
   innerLenis && innerLenis.destroy()

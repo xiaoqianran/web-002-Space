@@ -148,6 +148,7 @@ function animateHeight(sel, collapse, instant) {
     resizeMenuLenis()
     return
   }
+  gsap.killTweensOf(els)
   gsap.to(els, {
     height: collapse ? 0 : 'auto',
     duration: instant ? 0 : 0.5,
@@ -162,7 +163,8 @@ function slideWorldview(id) {
     tem_current_world.value = id
     return
   }
-  if (worldviewAnim && worldviewAnim.isActive()) return
+  if (worldviewAnim && worldviewAnim.isActive()) worldviewAnim.kill()
+  tem_current_world.value = id
   worldviewAnim = gsap.timeline()
     .to(box, { x: '110%', duration: 0.3, ease: ease_in })
     .fromTo(box, { x: '-110%' }, {
@@ -170,7 +172,6 @@ function slideWorldview(id) {
       duration: 0.4,
       ease: ease_out,
       immediateRender: false,
-      onStart: () => { tem_current_world.value = id },
     }, '<0.45')
 }
 
@@ -181,7 +182,7 @@ function toggleWorld(id) {
     openNode.value = ''
     return
   }
-  if (worldviewAnim && worldviewAnim.isActive()) return
+  if (worldviewAnim && worldviewAnim.isActive()) worldviewAnim.kill()
   animateHeight('.msb_selection_selected_world .msb_nodes_container, .msb_selection_selected_node .msb_ids_container', true)
   openWorld.value = id
   setTheme(id)
