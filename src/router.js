@@ -16,6 +16,7 @@ const router = createRouter({
     { path: '/404', name: 'notfound', component: NotFound },
     { path: '/:world', name: 'world', component: WorldView },
     { path: '/:world/records/:id/c:chapter', name: 'record', component: RecordView },
+    { path: '/:world/records/:id', redirect: (to) => `/${to.params.world}/records/${to.params.id}/c1` },
     { path: '/:world/portraits/:id', name: 'portrait', component: PortraitView },
     { path: '/:world/images/:id', name: 'image', component: ImageView },
     { path: '/:pathMatch(.*)*', name: '404', component: NotFound },

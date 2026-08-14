@@ -73,7 +73,7 @@ for (let c = 1; c <= rows; c++) {
     const y = c * (n * 2 / 4 * 3 - 0.5) - n * 2
     f.push({
       points: `${p},${y - n} ${p + i},${y - n / 2} ${p + i},${y + n / 2} ${p},${y + n} ${p - i},${y + n / 2} ${p - i},${y - n / 2}`,
-      origin: `${i} ${n}`,
+      origin: 'center',
     })
   }
   hexes.push(f)

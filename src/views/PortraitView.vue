@@ -34,7 +34,7 @@
     </div>
 
     <div v-show="viewOpen" class="pview" ref="viewbox">
-      <div class="pview_strip" @pointerdown="onDown" @pointermove="onMove" @pointerup="onUp">
+      <div class="pview_strip" @pointerdown="onDown" @pointermove="onMove" @pointerup="onUp" @pointercancel="onUp">
         <div class="pview_track" ref="track" :style="{ transform: `translateX(${tx}px)` }">
           <div
             v-for="(img, i) in (current?.portraits || [])"
@@ -176,13 +176,17 @@ function onDown(e) {
   drag = true
   lx = e.clientX
   startX = e.clientX
+  try { e.currentTarget?.setPointerCapture?.(e.pointerId) } catch {}
 }
 function onMove(e) {
   if (!drag) return
   tx.value += e.clientX - lx
   lx = e.clientX
 }
-function onUp() {
+function onUp(e) {
+  if (e?.currentTarget?.hasPointerCapture?.(e.pointerId)) {
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch {}
+  }
   if (!drag) return
   drag = false
   const imgs = current.value?.portraits || []
@@ -210,8 +214,12 @@ watch(() => route.fullPath, load, { immediate: true })
 onMounted(() => {
   if (sysEl.value) gsap.set(sysEl.value, { opacity: 0.2 })
   window.addEventListener('keydown', onKey)
+  window.addEventListener('pointerup', onUp)
+  window.addEventListener('pointercancel', onUp)
 })
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
+  window.removeEventListener('pointerup', onUp)
+  window.removeEventListener('pointercancel', onUp)
 })
 </script>

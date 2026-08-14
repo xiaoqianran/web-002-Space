@@ -73,6 +73,7 @@
             v-for="(c, i) in (meta.chapters || [])"
             :key="i"
             class="navigation_chapters_chapter"
+            :class="{ navigation_chapters_chapter_current: i + 1 === chapterNum }"
             @click="go(i + 1)"
           >
             <p class="_font_1">{{ c }}</p>
@@ -139,12 +140,25 @@ function destroyChapterLenis() {
   }
 }
 
+function scrollCurrentChapter() {
+  const root = chaptersEl.value || document.querySelector('.navigation_chapters')
+  const row = root?.querySelector?.('.navigation_chapters_chapter_current')
+  if (!row) return
+  chapterLenis?.resize?.()
+  if (chapterLenis?.scrollTo) {
+    chapterLenis.scrollTo(row, { immediate: true })
+  } else {
+    row.scrollIntoView({ block: 'nearest' })
+  }
+}
+
 function createChapterLenis() {
   destroyChapterLenis()
   const el = chaptersEl.value || document.querySelector('.navigation_chapters')
   if (!el) return
   el.scrollTo(0, 0)
   chapterLenis = bindLenis(el)
+  chapterLenis?.resize?.()
 }
 
 async function load() {
@@ -158,6 +172,8 @@ async function load() {
   destroyChapterLenis()
   await nextTick()
   createChapterLenis()
+  chapterLenis?.resize?.()
+  scrollCurrentChapter()
   resizeLenis()
   scroll_controler?.scrollTo?.(0, { immediate: true })
   window.scrollTo(0, 0)
