@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 const props = defineProps({
   stroke_color: { type: String, default: '' },
@@ -90,6 +90,13 @@ function initBackground() {
   }
 
   resize()
+  if (!canvas.offsetWidth || !canvas.offsetHeight) {
+    nextTick(() => {
+      requestAnimationFrame(() => {
+        if (bgEl.value === canvas) resize()
+      })
+    })
+  }
   draw()
   bgMove = select
   bgResize = resize

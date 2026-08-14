@@ -163,7 +163,7 @@ export function check_loading() {
     window.scrollTo(0, 0)
     hidden_loading()
   }
-  _checkTimer = setTimeout(finish, 800)
+  _checkTimer = setTimeout(finish, 180)
   Promise.resolve(_criticalReady).then(finish).catch(finish)
 }
 

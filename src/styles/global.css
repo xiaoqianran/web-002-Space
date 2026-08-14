@@ -32,7 +32,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .page-inner{position:relative;z-index:1;width:min(var(--content_width),92vw);margin:calc(var(--scale)*3rem) auto calc(var(--scale)*6rem);flex-direction:column}
 
 /* records — match original c_chapter_.CDFIszkT.css */
-.records{--tem_color_black:#000013;--tem_color_white:#f3f3f3;align-items:center;background-color:var(--tem_color_black);display:flex;flex-direction:column;min-height:100vh;width:100%;padding:0;height:auto;overflow:visible;position:relative}
+.records{--tem_color_black:#000013;--tem_color_white:#f3f3f3;align-items:center;background-color:transparent;display:flex;flex-direction:column;min-height:100vh;width:100%;padding:0;height:auto;overflow:visible;position:relative}
 .chapter,.information{width:var(--content_width)}
 .information{flex-direction:column;margin-bottom:calc(var(--scale)*6rem);margin-top:var(--content_y);position:relative;z-index:1}
 .information_top{align-items:center;border:var(--border_m) solid var(--tem_color_white);box-sizing:border-box;height:calc(var(--scale)*1.8rem);justify-content:space-between;padding:0 calc(var(--scale)*1rem);position:relative;width:100%}
@@ -98,7 +98,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 @media screen and (max-aspect-ratio:1/1){.navigation{height:70vh}}
 
 /* left scrollbar + inner canvas */
-#background{height:100vh;left:0;position:fixed;top:0;width:100%;pointer-events:none;z-index:0}
+#background{display:block;height:100vh;left:0;position:fixed;top:0;inset:0;width:100%;pointer-events:none;z-index:0}
 .scrollbar{height:100dvh;left:0;overflow:hidden;position:fixed;width:calc(var(--scale)*.1rem);z-index:10000}
 .scrollbar:before{background-color:var(--color_theme);content:"";height:100%;transform:translateY(calc((1 - var(--p))*-100%));width:100%}
 

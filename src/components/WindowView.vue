@@ -2,13 +2,9 @@
   <section
     class="windowview"
     ref="root"
-    @mousedown="onDown"
-    @touchstart="onDown"
+    @pointerdown="onDown"
     @mousemove="onMove"
     @touchmove.prevent="onMove"
-    @mouseup="onUp"
-    @mouseleave="onUp"
-    @touchend="onUp"
   >
     <div class="windowview_backgroud" ref="bgEl">
       <img class="windowview_backgroud_image" :src="BG" alt="background" decoding="async" fetchpriority="high" />
@@ -159,12 +155,16 @@ let mouse_x = 0
 let mouse_y = 0
 let distance_x = 0
 let distance_y = 0
+let vel_x = 0
+let vel_y = 0
 let min_x = 0, max_x = 0, min_y = 0, max_y = 0
 let infoTl = gsap.timeline()
 let dragTl = null
 let particles = []
 let raf = 0
 let starResize = null
+let dragBound = false
+let coastRaf = 0
 
 const selected = computed(() => {
   if (currentStar.value && store.worlds[currentStar.value]) return store.worlds[currentStar.value]
@@ -190,21 +190,67 @@ function eventXY(e) {
   return { x: e.clientX ?? e.x ?? 0, y: e.clientY ?? e.y ?? 0 }
 }
 
+function bindDragWindow(on) {
+  if (on === dragBound) return
+  dragBound = on
+  const fn = on ? window.addEventListener : window.removeEventListener
+  fn('pointermove', onDragMove)
+  fn('pointerup', onUp)
+  fn('pointercancel', onUp)
+}
+
+function stopCoast() {
+  if (coastRaf) {
+    cancelAnimationFrame(coastRaf)
+    coastRaf = 0
+  }
+}
+
+function clampPan() {
+  distance_x = Math.max(min_x, Math.min(max_x, distance_x))
+  distance_y = Math.max(min_y, Math.min(max_y, distance_y))
+}
+
+function applyPan(x, y, duration) {
+  if (dragTl) dragTl.kill()
+  dragTl = gsap.timeline()
+    .to(bgEl.value, { x: distance_x, y: distance_y, duration, ease: ease_out })
+    .to(starsEl.value, { x: distance_x * 0.8, y: distance_y * 0.8, duration, ease: ease_out }, '<')
+    .set([dragL0.value, dragL1.value, dragR0.value, dragR1.value].filter(Boolean), {
+      strokeDashoffset: (f) => (f % 2 === 0 ? y - innerHeight / 2 : y - innerHeight / 2 + 20),
+    }, '<')
+    .set([dragT0.value, dragT1.value].filter(Boolean), {
+      strokeDashoffset: (f) => (f === 0 ? x - innerWidth / 2 : x - innerWidth / 2 + 20),
+    }, '<')
+}
+
 function onDown(e) {
   if (e.target.closest?.('.windowview_stars_star_clickable') || e.target.closest?.('.windowview_stars_information')) return
+  stopCoast()
   const p = eventXY(e)
   if_movable = true
   mouse_x = p.x
   mouse_y = p.y
+  vel_x = 0
+  vel_y = 0
+  bindDragWindow(true)
 }
 
-function onMove(e) {
-  const p = eventXY(e)
+function followTip(p) {
   mouse.x = p.x
   mouse.y = p.y
   if (tipEl.value && !isTouch) {
     gsap.to(tipEl.value, { x: p.x, y: p.y, duration: 0.6, ease: ease_out })
   }
+}
+
+function onMove(e) {
+  followTip(eventXY(e))
+}
+
+function onDragMove(e) {
+  const p = eventXY(e)
+  followTip(p)
   if (!if_movable) return
   move(p.x, p.y)
   mouse_x = p.x
@@ -213,25 +259,36 @@ function onMove(e) {
 }
 
 function onUp() {
+  if (!if_movable) {
+    bindDragWindow(false)
+    return
+  }
   if_movable = false
+  bindDragWindow(false)
+  startCoast()
+}
+
+function startCoast() {
+  stopCoast()
+  if (Math.abs(vel_x) < 0.12 && Math.abs(vel_y) < 0.12) return
+  const remain = 1 / (1 - 0.93)
+  distance_x += vel_x * remain
+  distance_y += vel_y * remain
+  clampPan()
+  applyPan(mouse.x, mouse.y, 1.2)
 }
 
 function move(x, y) {
   const dpr = window.devicePixelRatio || 1
-  distance_x += (x - mouse_x) / window.innerWidth * 500 / dpr
-  distance_y += (y - mouse_y) / window.innerWidth * 500 / dpr
-  distance_x = Math.max(min_x, Math.min(max_x, distance_x))
-  distance_y = Math.max(min_y, Math.min(max_y, distance_y))
-  if (dragTl) dragTl.kill()
-  dragTl = gsap.timeline()
-    .to(bgEl.value, { x: distance_x, y: distance_y, duration: 1, ease: ease_out })
-    .to(starsEl.value, { x: distance_x * 0.8, y: distance_y * 0.8, duration: 1, ease: ease_out }, '<')
-    .set([dragL0.value, dragL1.value, dragR0.value, dragR1.value].filter(Boolean), {
-      strokeDashoffset: (f) => (f % 2 === 0 ? y - innerHeight / 2 : y - innerHeight / 2 + 20),
-    }, '<')
-    .set([dragT0.value, dragT1.value].filter(Boolean), {
-      strokeDashoffset: (f) => (f === 0 ? x - innerWidth / 2 : x - innerWidth / 2 + 20),
-    }, '<')
+  const unit = 500 / window.innerWidth / dpr
+  const dx = (x - mouse_x) * unit
+  const dy = (y - mouse_y) * unit
+  vel_x = vel_x * 0.55 + dx * 0.45
+  vel_y = vel_y * 0.55 + dy * 0.45
+  distance_x += dx
+  distance_y += dy
+  clampPan()
+  applyPan(x, y, 1)
 }
 
 function hoverStar(id) {
@@ -390,6 +447,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   cancelAnimationFrame(raf)
+  stopCoast()
+  bindDragWindow(false)
+  if (dragTl) dragTl.kill()
   if (starResize) window.removeEventListener('resize', starResize)
   window.removeEventListener('resize', bounds)
 })

@@ -123,18 +123,18 @@ function show(next) {
   if (animater) animater.kill()
   animater = gsap.timeline()
     .set(blocks, { scale: 1 })
-    .to(blocks, { opacity: 1, duration: 0.5, ease: ease_out, stagger: { from: 'random', each: 0.002 } })
+    .to(blocks, { opacity: 1, duration: 0.25, ease: ease_out, stagger: { from: 'random', each: 0.002 } })
     .to(blocks, {
       strokeOpacity: 0,
       strokeDashoffset: () => (Math.random() > 0.5 ? 'calc(var(--scale) * 50rem)' : 'calc(var(--scale) * -50rem)'),
-      duration: 0.5,
+      duration: 0.25,
       ease: ease_out,
       stagger: { from: 'random', each: 0.002 },
     }, '<0.3')
-    .to(middle, { opacity: 1, duration: 1, ease: ease_out }, '<')
+    .to(middle, { opacity: 1, duration: 0.35, ease: ease_out }, '<')
     .to(codewall, {
       opacity: 0.05,
-      duration: 1,
+      duration: 0.35,
       ease: ease_out,
       onComplete: () => {
         if (typeof next === 'function') next()
@@ -152,17 +152,17 @@ function hidden() {
     .to(blocks, {
       strokeOpacity: 1,
       strokeDashoffset: 0,
-      duration: 0.5,
+      duration: 0.25,
       ease: ease_out,
       stagger: { from: 'random', each: 0.002 },
     })
-    .to([middle, codewall], { opacity: 0, duration: 1, ease: ease_out }, '<')
+    .to([middle, codewall], { opacity: 0, duration: 0.35, ease: ease_out }, '<')
     .to(blocks, {
       scale: 0,
       opacity: 0,
-      duration: 1,
+      duration: 0.45,
       ease: ease_out,
-      stagger: { from: 'center', each: 0.004 },
+      stagger: { from: 'center', each: 0.002 },
       onComplete: () => {
         stopCode()
         shipRef.value?.pause?.()

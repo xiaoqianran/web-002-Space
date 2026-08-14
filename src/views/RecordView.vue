@@ -220,9 +220,15 @@ function back() {
 
 function toggleRead() {
   light.value = !light.value
+  const page = light.value ? '#f3f3f3' : '#000013'
   gsap.to('.records', {
-    '--tem_color_black': light.value ? '#f3f3f3' : '#000013',
+    '--tem_color_black': page,
     '--tem_color_white': light.value ? '#000013' : '#f3f3f3',
+    duration: 0.5,
+    ease: ease_out,
+  })
+  gsap.to(['html', 'body'], {
+    backgroundColor: page,
     duration: 0.5,
     ease: ease_out,
   })
@@ -252,5 +258,6 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
   if (chapterFade) chapterFade.kill()
   destroyChapterLenis()
+  gsap.set(['html', 'body'], { backgroundColor: '#000013' })
 })
 </script>
