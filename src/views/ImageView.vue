@@ -38,7 +38,7 @@
         <span v-for="n in 22" :key="n" :style="{ width: ((n * 5) % 4 + 1) + 'px' }"></span>
       </div>
     </div>
-    <div v-show="picked" class="iview" ref="viewbox" @click.self="hideView">
+    <div v-show="picked" class="iview" ref="viewbox">
       <img class="hero viewbox_imagebox_image" :src="$cdn(picked?.image_url)" alt="view" decoding="async" @click="showImageview(picked.image_url)" />
       <p class="iview_txt _font_1">{{ picked?.instrution }}</p>
       <div v-show="!store.imageview.open" class="overlay-return" @click.stop="hideView"><ReturnButton /></div>
