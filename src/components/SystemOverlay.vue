@@ -69,7 +69,7 @@
             @click.stop="selectWorld(w.id)"
           >
             <div>
-              <div class="spw_lottie" :data-world="w.id"></div>
+              <div class="spw_lottie home-lottie-animation" :data-world="w.id"></div>
             </div>
           </div>
         </div>
@@ -454,7 +454,9 @@ function loadLottie() {
             loop: true,
             autoplay: true,
             animationData,
+            rendererSettings: { className: 'lottie-svg', preserveAspectRatio: 'xMidYMid meet' },
           })
+          el.querySelectorAll('svg').forEach((svg) => svg.classList.add('lottie-svg'))
           lottieAnims.push(anim)
           return
         } catch (err) {
