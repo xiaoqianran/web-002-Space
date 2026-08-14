@@ -109,7 +109,6 @@
             @pointermove="onMove"
             @pointerup="onUp"
             @pointercancel="onUp"
-            @pointerleave="onUp"
           >
             <div
               v-for="(img, i) in portraitsData"
@@ -184,6 +183,10 @@ let viewLenis = null
 let bindedRotate = null
 let bindedResizeArrow = null
 let bindedResizeView = null
+let imageAnim = null
+let contentAnim = null
+let viewAnim = null
+let sysAnim = null
 
 function letters(i, role) {
   return `【 ${String(i).padStart(3, '0')} 】ROLE: ${role.name || ''}`
@@ -193,15 +196,22 @@ function rectDelay(role, l) {
   return String(role?.name?.charCodeAt?.(0) ?? 0).split('')[l] ?? 0
 }
 
+function tweenSys(opacity) {
+  if (!sysEl.value) return
+  if (sysAnim) sysAnim.kill()
+  gsap.killTweensOf(sysEl.value)
+  sysAnim = gsap.to(sysEl.value, { opacity, duration: 0.5, ease: ease_out, delay: 0.1 })
+}
+
 function showArrow(i) {
   arrowI.value = i
-  if (sysEl.value) gsap.to(sysEl.value, { opacity: 1, duration: 0.5, ease: ease_out, delay: 0.1 })
+  tweenSys(1)
   if (sel.value !== i) changeSystemContent(i)
 }
 
 function hiddenArrow() {
   arrowI.value = -1
-  if (sysEl.value) gsap.to(sysEl.value, { opacity: 0.2, duration: 0.5, ease: ease_out, delay: 0.1 })
+  tweenSys(0.2)
 }
 
 function changeSystemContent(t) {
@@ -301,14 +311,17 @@ function moveImages(t, immediate = false) {
   distance = Math.min(distance, 0)
   distance = Math.max(distance, -imageboxEl.value.offsetWidth)
   const lines = document.querySelectorAll('.portraits-page .viewbox_dragline_line line')
+  if (imageAnim) imageAnim.kill()
+  if (lines.length) gsap.killTweensOf(lines)
+  if (images.length) gsap.killTweensOf(images)
+  imageAnim = gsap.timeline()
+    .to(lines, {
+      strokeDashoffset: (s) => (s === 0 || s === 1 ? -distance : distance),
+      duration: 0.2,
+      ease: ease_out,
+    })
   images.forEach((h) => {
-    gsap.timeline()
-      .to(lines, {
-        strokeDashoffset: (s) => (s === 0 || s === 1 ? -distance : distance),
-        duration: 0.2,
-        ease: ease_out,
-      })
-      .to(h, { x: `${distance}px`, duration: immediate ? 0 : 0.5, ease: ease_out }, '<')
+    imageAnim.to(h, { x: `${distance}px`, duration: immediate ? 0 : 0.5, ease: ease_out }, '<')
   })
 }
 
@@ -317,7 +330,9 @@ function changeContent(t) {
     selectedImage.value = t
     return
   }
-  gsap.timeline()
+  if (contentAnim) contentAnim.kill()
+  gsap.killTweensOf(contentEl.value)
+  contentAnim = gsap.timeline()
     .to(contentEl.value, { y: '-100%', duration: 0.3, ease: ease_out })
     .fromTo(contentEl.value, { y: '100%' }, {
       y: '0',
@@ -340,11 +355,12 @@ function resetView() {
 
 function showView() {
   viewLenis && viewLenis.scrollTo(0, { immediate: true })
+  if (viewAnim) viewAnim.kill()
   resetView()
   viewOpen.value = true
   const edges = document.querySelectorAll('.portraits-page .viewbox_dragline_edge')
   const arrow = document.querySelector('.portraits-page .viewbox_dragline_arrow')
-  gsap.timeline()
+  viewAnim = gsap.timeline()
     .to(viewboxEl.value, { opacity: 1, duration: 1, ease: ease_out })
     .to(edges, { scale: 1, duration: 1.2, ease: ease_out }, '<')
     .to(instrutionEl.value, { translateY: 0, opacity: 1, duration: 1.5, ease: ease_out }, '<')
@@ -352,6 +368,7 @@ function showView() {
 }
 
 function readyShow(i) {
+  if (viewAnim) viewAnim.kill()
   viewIndex.value = i
   portraitsData.value = roles.value[i]?.portraits || []
   selectedImage.value = 0
@@ -366,12 +383,13 @@ function readyShow(i) {
 }
 
 function hideView() {
+  if (viewAnim) viewAnim.kill()
   if (!viewboxEl.value) {
     portraitsData.value = []
     viewOpen.value = false
     return
   }
-  gsap.to(viewboxEl.value, {
+  viewAnim = gsap.to(viewboxEl.value, {
     opacity: 0,
     duration: 0.6,
     ease: ease_out,
@@ -464,6 +482,10 @@ onMounted(() => {
 onUnmounted(() => {
   killTriggers()
   informationAnimater && informationAnimater.kill()
+  if (imageAnim) imageAnim.kill()
+  if (contentAnim) contentAnim.kill()
+  if (viewAnim) viewAnim.kill()
+  if (sysAnim) sysAnim.kill()
   viewLenis && viewLenis.destroy()
   viewLenis = null
   window.removeEventListener('keydown', onKey)

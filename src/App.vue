@@ -78,7 +78,12 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
 })
 
-watch(() => route.fullPath, applyPageScroll)
+watch(() => route.fullPath, () => {
+  if (store.imageview.open) closeView()
+  scroll_controler?.start()
+  scroll_controler?.resize()
+  applyPageScroll()
+})
 
 watch(() => store.menuOpen, (v) => {
   if (!scroll_controler) return
@@ -109,6 +114,7 @@ function applyImage() {
 
 function closeView() {
   if (!store.imageview.open) return
+  scroll_controler && scroll_controler.start()
   gsap.to('.imageview', {
     opacity: 0,
     duration: 0.6,
@@ -117,7 +123,6 @@ function closeView() {
       hideImageview()
       ix.value = iy.value = 0
       iz.value = 1
-      scroll_controler && scroll_controler.start()
     },
   })
 }

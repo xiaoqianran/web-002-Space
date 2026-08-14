@@ -12,7 +12,6 @@
       @pointerdown="onDown"
       @pointermove="onMove"
       @pointerup="onUp"
-      @pointerleave="onUp"
       @wheel.prevent="onWheel"
     >
       <div
@@ -70,6 +69,7 @@ let ease = { x: 0, y: 0 }
 let raf = 0
 let dragTipTimer = null
 let if_movable = false
+let viewAnim = null
 
 const COLS = 6
 const scale_nums = () => innerHeight / 300 + innerWidth / 300
@@ -181,17 +181,19 @@ function onWheel(e) {
 
 function open(cell) {
   if (Math.hypot(last.x - start.x, last.y - start.y) > 6) return
+  if (viewAnim) viewAnim.kill()
   picked.value = cell.item
   nextTick(() => {
     if (!viewbox.value) return
     gsap.set(viewbox.value, { opacity: 0 })
-    gsap.to(viewbox.value, { opacity: 1, duration: 1.3, ease: ease_out })
+    viewAnim = gsap.to(viewbox.value, { opacity: 1, duration: 1.3, ease: ease_out })
   })
 }
 
 function hideView() {
+  if (viewAnim) viewAnim.kill()
   if (!viewbox.value) { picked.value = null; return }
-  gsap.to(viewbox.value, {
+  viewAnim = gsap.to(viewbox.value, {
     opacity: 0,
     duration: 0.8,
     ease: ease_out,
@@ -223,11 +225,16 @@ onMounted(() => {
   pan.y = -40
   window.addEventListener('resize', layout)
   window.addEventListener('keydown', onKey)
+  window.addEventListener('pointerup', onUp)
+  window.addEventListener('pointercancel', onUp)
 })
 onUnmounted(() => {
   if (raf) cancelAnimationFrame(raf)
   window.removeEventListener('resize', layout)
   window.removeEventListener('keydown', onKey)
+  window.removeEventListener('pointerup', onUp)
+  window.removeEventListener('pointercancel', onUp)
   if (dragTipTimer) clearTimeout(dragTipTimer)
+  if (viewAnim) viewAnim.kill()
 })
 </script>

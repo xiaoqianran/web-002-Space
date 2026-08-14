@@ -37,6 +37,15 @@ router.beforeEach((to, from, next) => {
       return
     }
   }
+  const chapterHop =
+    from.name === 'record' &&
+    to.name === 'record' &&
+    from.params.world === to.params.world &&
+    from.params.id === to.params.id
+  if (chapterHop) {
+    next()
+    return
+  }
   show_loading(next)
 })
 

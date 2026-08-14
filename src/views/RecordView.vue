@@ -41,7 +41,7 @@
 → PREFETCH: enabled</p>
     </div>
 
-    <div class="chapter">
+    <div class="chapter" ref="chapterEl">
       <div class="chapter_title _font_5">
         <p class="_font_3">{{ chapterNum }}</p>
         {{ chapterTitle }}
@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
 import { setTheme, store } from '../store.js'
@@ -117,7 +117,11 @@ const meta = ref({ name: '', chapters: [], instrution: '', world: '', type: '', 
 const paras = ref([])
 const light = ref(false)
 const chaptersEl = ref(null)
+const chapterEl = ref(null)
 let chapterLenis = null
+let chapterFade = null
+let loadGen = 0
+let hasLoaded = false
 
 const chapterNum = computed(() => parseInt(String(route.params.chapter).replace(/^c/, ''), 10) || 1)
 const chapterTitle = computed(() => (meta.value.chapters || [])[chapterNum.value - 1] || '')
@@ -150,30 +154,58 @@ function scrollCurrentChapter() {
 }
 
 function createChapterLenis() {
-  destroyChapterLenis()
   const el = chaptersEl.value || document.querySelector('.navigation_chapters')
   if (!el) return
+  if (chapterLenis) {
+    chapterLenis.resize?.()
+    return
+  }
   el.scrollTo(0, 0)
   chapterLenis = bindLenis(el)
   chapterLenis?.resize?.()
 }
 
+function fadeChapter(opacity, duration) {
+  const el = chapterEl.value || document.querySelector('.records .chapter')
+  if (!el) return Promise.resolve()
+  if (chapterFade) chapterFade.kill()
+  return new Promise((resolve) => {
+    chapterFade = gsap.to(el, {
+      opacity,
+      duration,
+      ease: ease_out,
+      onComplete: resolve,
+      onInterrupt: resolve,
+    })
+  })
+}
+
 async function load() {
+  const gen = ++loadGen
   const w = route.params.world
   const id = route.params.id
   if (w) setTheme(w)
-  const m = await api.recordMeta(id)
+  const shouldFade = hasLoaded
+  const fetchP = Promise.all([
+    api.recordMeta(id),
+    api.recordChapter(id, 'c' + chapterNum.value),
+  ])
+  if (shouldFade) await fadeChapter(0, 0.25)
+  if (gen !== loadGen) return
+  const [m, ch] = await fetchP
+  if (gen !== loadGen) return
   if (m) meta.value = m
-  const ch = await api.recordChapter(id, 'c' + chapterNum.value)
   paras.value = Array.isArray(ch) ? ch : []
-  destroyChapterLenis()
+  hasLoaded = true
   await nextTick()
+  if (gen !== loadGen) return
   createChapterLenis()
   chapterLenis?.resize?.()
   scrollCurrentChapter()
   resizeLenis()
   scroll_controler?.scrollTo?.(0, { immediate: true })
   window.scrollTo(0, 0)
+  if (shouldFade) fadeChapter(1, 0.3)
 }
 
 function go(n) {
@@ -196,8 +228,29 @@ function toggleRead() {
   })
 }
 
+function overlaysOpen() {
+  return store.menuOpen || store.systemOpen || store.consoleOpen || store.imageview.open
+}
+
+function onKey(e) {
+  if (overlaysOpen()) return
+  const k = e.key
+  if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'k' || k === 'K') {
+    e.preventDefault()
+    go(chapterNum.value - 1)
+  } else if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'j' || k === 'J') {
+    e.preventDefault()
+    go(chapterNum.value + 1)
+  }
+}
+
 watch(() => route.fullPath, load, { immediate: true })
+onMounted(() => {
+  window.addEventListener('keydown', onKey)
+})
 onUnmounted(() => {
+  window.removeEventListener('keydown', onKey)
+  if (chapterFade) chapterFade.kill()
   destroyChapterLenis()
 })
 </script>

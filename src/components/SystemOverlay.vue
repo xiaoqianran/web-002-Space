@@ -269,7 +269,7 @@ function showContent() {
 }
 
 function show() {
-  if (animater && animater.isActive()) return
+  if (animater && animater.isActive()) animater.kill()
   resizeWorlds()
   animating.value = true
   store.systemOpen = true
@@ -303,7 +303,7 @@ function show() {
 }
 
 function hide() {
-  if (animater && animater.isActive()) return
+  if (animater && animater.isActive()) animater.kill()
   animater = gsap.timeline().to(container.value, {
     opacity: 0,
     duration: 1,
@@ -402,7 +402,11 @@ function jump() {
   ensureId()
   const id = currentId.value
   if (!w || !n || !id) return
-  hide()
+  closeSystem()
+  if (animater) animater.kill()
+  animater = null
+  if (container.value) gsap.set(container.value, { opacity: 0 })
+  animating.value = false
   if (n === 'records') {
     const chapters = store.routerMap?.[w]?.records?.[id] || ['c1']
     router.push(`/${w}/records/${id}/${chapters[0]}`)
