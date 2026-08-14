@@ -20,6 +20,14 @@
             </div>
           </div>
         </div>
+        <div
+          v-if="exploreTo"
+          class="wsi_button worldpage_explore"
+          @click="explore"
+        >
+          <div class="wsi_button_icon"><div></div><div></div></div>
+          <p class="wsi_button_text _font_2" :style="{ '--color': world.color }">EXPLORE</p>
+        </div>
       </div>
       <div class="worldpage_scroll">
         <p class="_font_1">SCROLL ////</p>
@@ -49,6 +57,21 @@ const blocks = computed(() => {
     image: b.image || '',
   }))
 })
+
+const exploreTo = computed(() => {
+  const id = world.value?.id
+  const records = store.worlds[id]?.map?.records || {}
+  const first = Object.values(records)[0]
+  const firstId = first?.id || Object.keys(records)[0]
+  if (!id || !firstId) return ''
+  const chapters = store.routerMap?.[id]?.records?.[firstId]
+  const chapter = (Array.isArray(chapters) && chapters[0]) || 'c1'
+  return `/${id}/records/${firstId}/${chapter}`
+})
+
+function explore() {
+  if (exploreTo.value) router.push(exploreTo.value)
+}
 
 async function load() {
   const id = route.params.world

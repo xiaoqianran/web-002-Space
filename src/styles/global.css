@@ -321,7 +321,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .worldpage_bg{position:fixed;left:0;top:0;height:100dvh;width:58%;z-index:1;-webkit-mask-image:linear-gradient(90deg,#000 20%,#0000 88%);mask-image:linear-gradient(90deg,#000 20%,#0000 88%)}
 .worldpage_bg img{width:100%;height:100%;object-fit:cover}
 .worldpage_body{position:relative;z-index:2;width:100%;justify-content:flex-end;min-height:100%;padding:calc(var(--scale)*8rem) calc(var(--scale)*4rem) calc(var(--scale)*6rem) 0;box-sizing:border-box}
-.worldpage_content{flex-direction:column;align-items:start;width:calc(var(--scale)*26rem);margin-right:calc(var(--scale)*5rem)}
+.worldpage_content{flex-direction:column;align-items:start;width:calc(var(--scale)*26rem);margin-right:calc(var(--scale)*5rem);position:relative}
 .worldpage_title{background:linear-gradient(90deg,var(--color_theme),#0000);color:var(--color_white);margin-bottom:calc(var(--scale)*2rem);padding:calc(var(--scale)*.5rem) calc(var(--scale)*3.5rem) calc(var(--scale)*.5rem) calc(var(--scale)*1rem)}
 .worldpage_sections{flex-direction:column;align-items:start;width:100%}
 .worldpage_block{flex-direction:column;align-items:start;width:100%;margin-bottom:calc(var(--scale)*1.6rem)}
@@ -332,6 +332,7 @@ button{font-family:inherit;background:none;border:0;color:inherit;cursor:pointer
 .worldpage_scroll{position:sticky;top:0;height:100dvh;width:calc(var(--scale)*3rem);align-items:center;flex-direction:column;justify-content:start;padding-top:calc(var(--scale)*8rem);margin-right:calc(var(--scale)*1rem)}
 .worldpage_scroll p{writing-mode:vertical-rl;color:var(--color_theme);letter-spacing:.25em}
 .worldpage_scroll_line{width:var(--border_xs);flex:1;margin-top:calc(var(--scale)*1rem);background:linear-gradient(180deg,var(--color_theme),transparent)}
+.worldpage_explore{position:sticky;bottom:calc(var(--scale)*2.4rem);align-self:flex-end;margin-top:calc(var(--scale)*1.6rem);z-index:3}
 
 /* records polish + overlap fix */
 .information_top_title{position:relative;z-index:1}
